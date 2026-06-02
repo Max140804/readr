@@ -149,7 +149,7 @@ class StudentData {
     Student(regNumber: '2022364147', surname: 'ETOLUE', firstName: 'HENRY'),
     Student(regNumber: '2022364148', surname: 'JEJENIWA', firstName: 'WISDOM'),
     Student(regNumber: '2022364149', surname: 'ARINZE', firstName: 'NEHEMIAH'),
-    Student(regNumber: '2022364250', surname: 'MODEBE', firstName: 'CHUKWUDI'),
+    Student(regNumber: '2022364150', surname: 'MODEBE', firstName: 'CHUKWUDI'),
     Student(regNumber: '2022364151', surname: 'NNAEMENA', firstName: 'IFEANYI'),
     Student(regNumber: '2022364152', surname: 'UGOCHUKWU', firstName: 'EMMANUEL'),
     Student(regNumber: '2022364153', surname: 'OKOROCHA', firstName: 'CHUKWUBUIKE'),
