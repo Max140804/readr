@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
-import 'data/timetable_data.dart';
 import 'login_page.dart';
 import 'dashboard.dart';
+import 'data/timetable_data.dart';
+import 'services/update_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -32,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     
     _mainController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: const Duration(milliseconds: 1500),
     );
 
     _pulseController = AnimationController(
@@ -72,11 +73,46 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     _mainController.forward();
 
-    _mainController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        Future.delayed(const Duration(milliseconds: 800), _checkLoginStatus);
-      }
+    // Safe, non-blocking navigation and update check
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.checkForUpdates(context);
+      Future.delayed(const Duration(milliseconds: 2200), _checkAuthAndNavigate);
     });
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+      if (!mounted) return;
+
+      Widget targetPage;
+      if (isLoggedIn) {
+        final String userName = prefs.getString('userName') ?? 'Student';
+        final String userId = prefs.getString('userId') ?? 'user';
+        final bool isAdmin = prefs.getBool('isAdmin') ?? false;
+        targetPage = Dashboard(userName: userName, userId: userId, isAdmin: isAdmin);
+      } else {
+        targetPage = const LoginPage();
+      }
+
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => targetPage,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 800),
+        ),
+      );
+    } catch (_) {
+      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+    }
   }
 
   @override
@@ -87,46 +123,28 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     super.dispose();
   }
 
-  Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    
-    if (!mounted) return;
-
-    Widget targetPage;
-    if (isLoggedIn) {
-      final String userName = prefs.getString('userName') ?? 'Student';
-      final bool isAdmin = prefs.getBool('isAdmin') ?? false;
-      targetPage = Dashboard(userName: userName, isAdmin: isAdmin);
-    } else {
-      targetPage = const LoginPage();
-    }
-
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => targetPage,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(
-              scale: Tween<double>(begin: 1.05, end: 1.0).animate(animation),
-              child: child,
-            ),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 1000),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AcademicTheme.primary,
       body: Stack(
         children: [
-          // 1. Particle Background
+          // 1. Premium Gradient Background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 1.2,
+                colors: [
+                  Color(0xFF283593), // Lighter Navy
+                  Color(0xFF1A237E), // Deep Navy
+                  Color(0xFF0D1117), // Near Black
+                ],
+                stops: [0.0, 0.6, 1.0],
+              ),
+            ),
+          ),
+
+          // 2. Particle Background
           AnimatedBuilder(
             animation: _particleController,
             builder: (context, child) {
@@ -137,14 +155,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             },
           ),
 
-          // 2. Texture Layer
+          // 3. Texture Layer (Subtle)
           AnimatedBuilder(
             animation: _bgScale,
             builder: (context, child) {
               return Transform.scale(
                 scale: _bgScale.value,
                 child: Opacity(
-                  opacity: 0.08,
+                  opacity: 0.05,
                   child: Image.asset(
                     'assets/pattern.png',
                     fit: BoxFit.cover,
@@ -157,30 +175,29 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             },
           ),
 
-          // 3. Center Content
+          // 4. Center Content
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo Section
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Glow Effect
+                    // Enhanced Glow
                     FadeTransition(
                       opacity: _glowOpacity,
                       child: AnimatedBuilder(
                         animation: _pulseController,
                         builder: (context, child) {
                           return Container(
-                            width: 200 + (_pulseController.value * 40),
-                            height: 200 + (_pulseController.value * 40),
+                            width: 240 + (_pulseController.value * 60),
+                            height: 240 + (_pulseController.value * 60),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: RadialGradient(
                                 colors: [
-                                  AcademicTheme.accent.withOpacity(0.2),
-                                  AcademicTheme.accent.withOpacity(0.0),
+                                  const Color(0xFFC5A059).withValues(alpha: 0.15),
+                                  const Color(0xFFC5A059).withValues(alpha: 0.0),
                                 ],
                               ),
                             ),
@@ -188,32 +205,37 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         },
                       ),
                     ),
-                    // Main Logo Circle
+                    // Main Logo Container
                     ScaleTransition(
                       scale: _logoScale,
                       child: FadeTransition(
                         opacity: _logoOpacity,
                         child: Container(
-                          width: 140,
-                          height: 140,
+                          width: 150,
+                          height: 150,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 40,
-                                offset: const Offset(0, 15),
+                                color: Colors.black.withValues(alpha: 0.4),
+                                blurRadius: 50,
+                                offset: const Offset(0, 20),
+                              ),
+                              BoxShadow(
+                                color: const Color(0xFFC5A059).withValues(alpha: 0.3),
+                                blurRadius: 20,
+                                spreadRadius: -5,
                               ),
                             ],
                           ),
-                          padding: const EdgeInsets.all(25),
+                          padding: const EdgeInsets.all(28),
                           child: Image.asset(
                             'assets/logo.png',
                             errorBuilder: (context, error, stackTrace) => const Icon(
                               Icons.menu_book_rounded,
-                              size: 75,
-                              color: AcademicTheme.primary,
+                              size: 80,
+                              color: Color(0xFF1A237E),
                             ),
                           ),
                         ),
@@ -222,9 +244,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   ],
                 ),
 
-                const SizedBox(height: 50),
+                const SizedBox(height: 60),
 
-                // Text Section
+                // Text Section with Shimmer effect (via opacity/gradient)
                 AnimatedBuilder(
                   animation: _mainController,
                   builder: (context, child) {
@@ -232,36 +254,41 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       opacity: _contentFade,
                       child: Column(
                         children: [
-                          Text(
-                            "Readr",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 52,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: _textTracking.value,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  offset: const Offset(0, 5),
-                                  blurRadius: 10,
-                                ),
-                              ],
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [Colors.white, Color(0xFFC5A059), Colors.white],
+                              stops: [0.0, 0.5, 1.0],
+                            ).createShader(bounds),
+                            child: Text(
+                              "Readr",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 58,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: _textTracking.value,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 15),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: Colors.white.withOpacity(0.25)),
+                              borderRadius: BorderRadius.circular(40),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.05),
+                                  Colors.white.withValues(alpha: 0.1),
+                                ],
+                              ),
                             ),
                             child: const Text(
                               "UNLEASH YOUR POTENTIAL",
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
+                                color: Colors.white70,
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                letterSpacing: 3,
+                                letterSpacing: 4,
                               ),
                             ),
                           ),
@@ -274,33 +301,22 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             ),
           ),
 
-          // 4. Loading Indicator at Bottom
+          // Minimal Loading Indicator
           Positioned(
-            bottom: 70,
+            bottom: 80,
             left: 0,
             right: 0,
             child: FadeTransition(
               opacity: _contentFade,
-              child: const Column(
-                children: [
-                  SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AcademicTheme.accent),
-                    ),
+              child: Center(
+                child: SizedBox(
+                  width: 40,
+                  child: LinearProgressIndicator(
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFC5A059)),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  SizedBox(height: 15),
-                  Text(
-                    "Loading your universe...",
-                    style: TextStyle(
-                      color: Colors.white38,
-                      fontSize: 12,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -339,12 +355,10 @@ class ParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
-
     for (var particle in particles) {
       final yPos = ((particle.y - animationValue * particle.speed) % 1.0) * size.height;
       final xPos = particle.x * size.width;
-      
-      paint.color = Colors.white.withOpacity(particle.opacity);
+      paint.color = Colors.white.withValues(alpha: particle.opacity);
       canvas.drawCircle(Offset(xPos, yPos), particle.size, paint);
     }
   }

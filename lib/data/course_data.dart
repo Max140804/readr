@@ -1,0 +1,152 @@
+import 'package:flutter/material.dart';
+import '../assignments_page.dart';
+
+class CourseData {
+  static const String supabaseBucketUrl = "https://hcqaseovlciadogewnsw.supabase.co/storage/v1/object/public/materials";
+
+  static String getPath(String path) {
+    final remotePath = path.replaceFirst('assets/', '');
+    return "$supabaseBucketUrl/${Uri.encodeFull(remotePath)}";
+  }
+
+  static List<Map<String, dynamic>> getCourses() {
+    return [
+      {
+        "title": "ECE 505",
+        "subtitle": "COMPUTER AIDED DESIGN",
+        "icon": Icons.architecture,
+        "color": Colors.blueGrey,
+        "credits": 3,
+        "semester": 1,
+        "pdfs": [
+          {"title": "Introduction to CAD Tool", "path": getPath("assets/1st Semester/ECE505/ECE 505 INTRODUCTION TO CAD TOOL.pdf"), "topic": "General"},
+          {"title": "Transient Analysis", "path": getPath("assets/1st Semester/ECE505/transient analysis .pdf"), "topic": "Circuit Analysis"},
+          {"title": "Step Response of RLC", "path": getPath("assets/1st Semester/ECE505/Step Response of an RLC Circuit.pdf"), "topic": "Circuit Analysis"},
+          {"title": "Math Modeling", "path": getPath("assets/1st Semester/ECE505/Mathematical-Modeling-of-Mechanical-and-Electrical-Systems.pdf"), "topic": "Modeling"},
+        ],
+        "videos": [
+          {"title": "Introduction to Computer Aided Design", "thumbnail": "https://img.youtube.com/vi/mFasqK_t9k8/0.jpg", "url": "https://youtu.be/mFasqK_t9k8"},
+          {"title": "Transient Analysis of RC Circuits", "thumbnail": "https://img.youtube.com/vi/pM3p8B_11I0/0.jpg", "url": "https://youtu.be/pM3p8B_11I0"},
+          {"title": "Step Response of RLC Circuits", "thumbnail": "https://img.youtube.com/vi/G-T_YtA5pTM/0.jpg", "url": "https://youtu.be/G-T_YtA5pTM"},
+          {"title": "Mathematical Modeling of Electrical Systems", "thumbnail": "https://img.youtube.com/vi/zD_E9Sle5uY/0.jpg", "url": "https://youtu.be/zD_E9Sle5uY"},
+          {"title": "Matlab for Circuit Analysis", "thumbnail": "https://img.youtube.com/vi/kCAsGg_uU6Y/0.jpg", "url": "https://youtu.be/kCAsGg_uU6Y"},
+          {"title": "RLC Circuit State Space Modeling", "thumbnail": "https://img.youtube.com/vi/6_NoxP_n0r0/0.jpg", "url": "https://youtu.be/6_NoxP_n0r0"},
+        ],
+        "pastQuestions": [{"title": "505 Past Question", "path": getPath("assets/1st Semester/ECE505/505 past question.pdf")}],
+        "assignments": <Assignment>[],
+      },
+      {
+        "title": "ECE 517",
+        "subtitle": "REAL TIME COMPUTING & CONTROL",
+        "icon": Icons.timer_outlined,
+        "color": Colors.indigo,
+        "credits": 3,
+        "semester": 1,
+        "pdfs": [
+          {"title": "Real Time Computing Intro", "path": getPath("assets/1st Semester/ECE517/Real time computing and programming - intro.pdf"), "topic": "Introduction"},
+          {"title": "Sensors and Actuators", "path": getPath("assets/1st Semester/ECE517/Real Time computing and programming - sensors.pdf"), "topic": "Sensors"},
+          {"title": "Microcontrollers", "path": getPath("assets/1st Semester/ECE517/Real Time computing and programming - microcontrollers.pdf"), "topic": "Microcontrollers"},
+        ],
+        "videos": [
+          {"title": "Introduction to Real-Time Systems", "thumbnail": "https://img.youtube.com/vi/7p7M_7X-6Is/0.jpg", "url": "https://youtu.be/7p7M_7X-6Is"},
+          {"title": "RTOS: Task Scheduling & Priorities", "thumbnail": "https://img.youtube.com/vi/F321087yYy4/0.jpg", "url": "https://youtu.be/F321087yYy4"},
+          {"title": "Microcontrollers Hardware Architecture", "thumbnail": "https://img.youtube.com/vi/vS_T0K2oB_k/0.jpg", "url": "https://youtu.be/vS_T0K2oB_k"},
+          {"title": "Sensors and Actuators Explained", "thumbnail": "https://img.youtube.com/vi/p6K8G3K7UeM/0.jpg", "url": "https://youtu.be/p6K8G3K7UeM"},
+          {"title": "Assembly Language Programming", "thumbnail": "https://img.youtube.com/vi/w9KCH_W9Trc/0.jpg", "url": "https://youtu.be/w9KCH_W9Trc"},
+          {"title": "Interrupts and Timers", "thumbnail": "https://img.youtube.com/vi/uV9E8p_Gv_k/0.jpg", "url": "https://youtu.be/uV9E8p_Gv_k"},
+        ],
+        "pastQuestions": [{"title": "517 Past Question", "path": getPath("assets/1st Semester/ECE517/517 past question.pdf")}],
+        "assignments": <Assignment>[],
+      },
+      {
+        "title": "ECE 527",
+        "subtitle": "SOLID STATE ELECTRONICS",
+        "icon": Icons.lightbulb,
+        "color": Colors.deepOrange,
+        "credits": 3,
+        "semester": 1,
+        "pdfs": [
+          {"title": "Semiconductor Fabrication", "path": getPath("assets/1st Semester/ECE527/ECE 527 LECTURE 2 semiconductor fibrication process [Compatibility Mode].pdf"), "topic": "Fabrication"},
+          {"title": "MOSFET Fabrication", "path": getPath("assets/1st Semester/ECE527/ECE 527 LECTURES  4 MOSFET  fibrication.ppt.pptx"), "topic": "Fabrication"},
+          {"title": "SRAM and DRAM", "path": getPath("assets/1st Semester/ECE527/ECE_527_SRAM_and_DRAM_handout.pdf"), "topic": "Memory"},
+        ],
+        "videos": [
+          {"title": "Semiconductor Fabrication Process", "thumbnail": "https://img.youtube.com/vi/FmP9X-pM_lI/0.jpg", "url": "https://youtu.be/FmP9X-pM_lI"},
+          {"title": "BJT Structure and Working", "thumbnail": "https://img.youtube.com/vi/9w00XzH8m7Q/0.jpg", "url": "https://youtu.be/9w00XzH8m7Q"},
+          {"title": "MOSFET Fabrication Step-by-Step", "thumbnail": "https://img.youtube.com/vi/stM8dJBB87Q/0.jpg", "url": "https://youtu.be/stM8dJBB87Q"},
+          {"title": "Thyristors (SCR) Explained", "thumbnail": "https://img.youtube.com/vi/0AgP-RzEfs0/0.jpg", "url": "https://youtu.be/0AgP-RzEfs0"},
+          {"title": "SRAM vs DRAM: Operation", "thumbnail": "https://img.youtube.com/vi/fUfR_C96uCc/0.jpg", "url": "https://youtu.be/fUfR_C96uCc"},
+          {"title": "Photolithography Process", "thumbnail": "https://img.youtube.com/vi/0pA9pI_A54M/0.jpg", "url": "https://youtu.be/0pA9pI_A54M"},
+        ],
+        "pastQuestions": [{"title": "527 Past Question", "path": getPath("assets/1st Semester/ECE527/527 past question.pdf")}],
+        "assignments": <Assignment>[],
+      },
+      {
+        "title": "ECE 537",
+        "subtitle": "DIGITAL SIGNAL PROCESSING",
+        "icon": Icons.graphic_eq,
+        "color": Colors.blue,
+        "credits": 3,
+        "semester": 1,
+        "pdfs": [
+          {"title": "Introduction to DSP", "path": getPath("assets/pdfs/ECE 537 - Lect - Introduction-1.pdf"), "topic": "Introduction"},
+          {"title": "Discrete-Time Systems", "path": getPath("assets/1st Semester/ECE537/Handout - Discrete-Time Systems.pdf"), "topic": "Systems"},
+          {"title": "Z-Transform", "path": getPath("assets/1st Semester/ECE537/14_ZTransform(revised 10-15).pdf"), "topic": "Z-Transform"},
+        ],
+        "videos": [
+          {"title": "Intro to DSP: Sampling & Reconstruction", "thumbnail": "https://img.youtube.com/vi/6dF6K9R3B0U/0.jpg", "url": "https://youtu.be/6dF6K9R3B0U"},
+          {"title": "The Z-Transform Tutorial", "thumbnail": "https://img.youtube.com/vi/n5V4X7zS_0s/0.jpg", "url": "https://youtu.be/n5V4X7zS_0s"},
+          {"title": "Discrete Time Convolution", "thumbnail": "https://img.youtube.com/vi/8mS_A-k0wXg/0.jpg", "url": "https://youtu.be/8mS_A-k0wXg"},
+          {"title": "Fast Fourier Transform (FFT)", "thumbnail": "https://img.youtube.com/vi/h7apO7q16V0/0.jpg", "url": "https://youtu.be/h7apO7q16V0"},
+          {"title": "Digital Filter Design: FIR vs IIR", "thumbnail": "https://img.youtube.com/vi/1_8-V6_D6Yk/0.jpg", "url": "https://youtu.be/1_8-V6_D6Yk"},
+          {"title": "Sampling Theorem Explained", "thumbnail": "https://img.youtube.com/vi/FcXZ27L0m60/0.jpg", "url": "https://youtu.be/FcXZ27L0m60"},
+        ],
+        "pastQuestions": [],
+        "assignments": <Assignment>[],
+      },
+      {
+        "title": "ECE 542",
+        "subtitle": "DATABASE MANAGEMENT SYSTEMS",
+        "icon": Icons.storage,
+        "color": Colors.brown,
+        "credits": 3,
+        "semester": 2,
+        "pdfs": [
+          {"title": "DBMS Introduction", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/DBMS_INTRO_Lec1.pdf"), "topic": "Introduction"},
+          {"title": "ER Model", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/DBMS_ER_MODEL_Lec2 new.pdf"), "topic": "ER Modeling"},
+        ],
+        "videos": [
+          {"title": "DBMS Introduction Full Course", "thumbnail": "https://img.youtube.com/vi/3EJ6S8_D_S8/0.jpg", "url": "https://youtu.be/3EJ6S8_D_S8"},
+          {"title": "ER Diagram Introduction", "thumbnail": "https://img.youtube.com/vi/QpdhBUYk7Kk/0.jpg", "url": "https://youtu.be/QpdhBUYk7Kk"},
+          {"title": "SQL Tutorial for Beginners", "thumbnail": "https://img.youtube.com/vi/HXV3zeQKqGY/0.jpg", "url": "https://youtu.be/HXV3zeQKqGY"},
+          {"title": "Normalization (1NF, 2NF, 3NF)", "thumbnail": "https://img.youtube.com/vi/UrYLYV7WSHM/0.jpg", "url": "https://youtu.be/UrYLYV7WSHM"},
+          {"title": "Relational Algebra", "thumbnail": "https://img.youtube.com/vi/H_8_G_o9t_w/0.jpg", "url": "https://youtu.be/H_8_G_o9t_w"},
+          {"title": "Database Indexing (B-Trees)", "thumbnail": "https://img.youtube.com/vi/aZjYr87r1b8/0.jpg", "url": "https://youtu.be/aZjYr87r1b8"},
+        ],
+        "pastQuestions": [],
+        "assignments": <Assignment>[],
+      },
+      {
+        "title": "ELE 574",
+        "subtitle": "CONTROL SYSTEM ENGINEERING",
+        "icon": Icons.settings,
+        "color": Colors.blueGrey,
+        "credits": 3,
+        "semester": 2,
+        "pdfs": [
+          {"title": "Control Systems", "path": getPath("assets/2nd Semester/ELE 574 CONTROL SYSTEM ENGINEERING/CONTROL SYSTEMS.pdf"), "topic": "General"},
+        ],
+        "videos": [
+          {"title": "Introduction to Control Systems", "thumbnail": "https://img.youtube.com/vi/STQpA_L7Y-M/0.jpg", "url": "https://youtu.be/STQpA_L7Y-M"},
+          {"title": "Root Locus Technique", "thumbnail": "https://img.youtube.com/vi/CRvVDoXJjQD/0.jpg", "url": "https://youtu.be/CRvVDoXJjQD"},
+          {"title": "PID Control Explained", "thumbnail": "https://img.youtube.com/vi/UR0hOmjaZ0o/0.jpg", "url": "https://youtu.be/UR0hOmjaZ0o"},
+          {"title": "Stability: Routh-Hurwitz", "thumbnail": "https://img.youtube.com/vi/F-6rE_qP5Ww/0.jpg", "url": "https://youtu.be/F-6rE_qP5Ww"},
+          {"title": "Bode Plots Tutorial", "thumbnail": "https://img.youtube.com/vi/_p-E66id5_o/0.jpg", "url": "https://youtu.be/_p-E66id5_o"},
+          {"title": "State Space Representation", "thumbnail": "https://img.youtube.com/vi/6f5S-2ZisB8/0.jpg", "url": "https://youtu.be/6f5S-2ZisB8"},
+        ],
+        "pastQuestions": [],
+        "assignments": <Assignment>[],
+      },
+    ];
+  }
+}

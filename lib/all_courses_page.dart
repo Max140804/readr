@@ -1,264 +1,169 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'PDFPage.dart';
 import 'assignments_page.dart';
 import 'data/timetable_data.dart';
+import 'utils/responsive_utils.dart';
+import 'data/course_data.dart';
 
-class AllCoursesPage extends StatelessWidget {
-  const AllCoursesPage({super.key});
+class AllCoursesPage extends StatefulWidget {
+  final bool isAdmin;
+  const AllCoursesPage({super.key, this.isAdmin = false});
+
+  @override
+  State<AllCoursesPage> createState() => _AllCoursesPageState();
+}
+
+class _AllCoursesPageState extends State<AllCoursesPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
-    final courses = [
-      {
-        "title": "ECE 527",
-        "subtitle": "Solid State Electronics",
-        "icon": Icons.lightbulb,
-        "color": Colors.deepOrange,
-        "pdfs": [
-          {"title": "Semiconductor Fabrication Process", "path": "assets/pdfs/ECE 527 LECTURE 2.docx"},
-        ],
-        "videos": [
-          {
-            "title": "Semiconductor Introduction",
-            "thumbnail": "https://img.youtube.com/vi/tiP6fgySxPU/0.jpg",
-            "url": "https://youtu.be/tiP6fgySxPU?si=iZOryxdxMCxHH9hO",
-          }
-        ],
-        "pastQuestions": [
-          {"title": "2023 Exam", "path": "assets/pdfs/ECE 527 LECTURE 2.docx"},
-        ],
-        "assignments": [
-          Assignment(id: "1", title: "PN Junction Analysis", dueDate: DateTime.now().add(const Duration(days: 3)), status: AssignmentStatus.pending),
-        ],
-      },
-      {
-        "title": "ECE 537",
-        "subtitle": "Digital Signal Processing",
-        "icon": Icons.graphic_eq,
-        "color": Colors.blue,
-        "pdfs": [
-          {"title": "Introduction to DSP", "path": "assets/pdfs/ECE 537 - Lect - Introduction-1.pdf"},
-        ],
-        "videos": [
-          {
-            "title": "DSP Introduction",
-            "thumbnail": "https://img.youtube.com/vi/iCaDt9Esdv4/0.jpg",
-            "url": "https://youtu.be/iCaDt9Esdv4?si=W7gAhEzvfHcKjhl4",
-          },
-        ],
-        "pastQuestions": [
-          {"title": "2023 Exam", "path": "assets/pdfs/ECE 537 - Lect - Introduction-1.pdf"},
-          {"title": "2022 Exam", "path": "assets/pdfs/ECE 537 - Lect - Introduction-1.pdf"}
-        ],
-        "assignments": [
-          Assignment(id: "2", title: "FFT Implementation", dueDate: DateTime.now().subtract(const Duration(days: 1)), status: AssignmentStatus.overdue),
-        ],
-      },
-      {
-        "title": "ECE 517",
-        "subtitle": "Real-time Computing and Control",
-        "icon": Icons.timer_outlined,
-        "color": Colors.indigo,
-        "pdfs": [],
-        "videos": [],
-        "pastQuestions": [],
-        "assignments": [],
-      },
-      {
-        "title": "ECE 539",
-        "subtitle": "Communication Systems",
-        "icon": Icons.settings_input_antenna,
-        "color": Colors.redAccent,
-        "pdfs": [],
-        "videos": [],
-        "pastQuestions": [],
-        "assignments": [],
-      },
-      {
-        "title": "ECE 519",
-        "subtitle": "Seminar",
-        "icon": Icons.co_present,
-        "color": Colors.purple,
-        "pdfs": [],
-        "videos": [],
-        "pastQuestions": [],
-        "assignments": [],
-      },
-      {
-        "title": "ECE 505",
-        "subtitle": "Computer Aided Design",
-        "icon": Icons.architecture,
-        "color": Colors.blueGrey,
-        "pdfs": [],
-        "videos": [],
-        "pastQuestions": [],
-        "assignments": [],
-      },
-      {
-        "title": "ECE 541",
-        "subtitle": "Artificial Intelligence",
-        "icon": Icons.psychology_outlined,
-        "color": Colors.teal,
-        "pdfs": [],
-        "videos": [],
-        "pastQuestions": [],
-        "assignments": [],
-      },
-      {
-        "title": "ECE 529",
-        "subtitle": "System Programming",
-        "icon": Icons.terminal,
-        "color": Colors.green,
-        "pdfs": [],
-        "videos": [],
-        "pastQuestions": [],
-        "assignments": [],
-      },
-    ];
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AcademicTheme.primary,
+        backgroundColor: isDark ? AcademicTheme.darkCard : AcademicTheme.primary,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           "All Courses",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: GridView.builder(
-          itemCount: courses.length,
-          gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 15,
-            mainAxisSpacing: 15,
-            childAspectRatio: 0.82,
-          ),
-          itemBuilder: (context, index) {
-            final course = courses[index];
-
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PDFPage(
-                      courseTitle: course["title"] as String,
-                      pdfs: (course["pdfs"] as List?) ?? [],
-                      videos: (course["videos"] as List?) ?? [],
-                      pastQuestions: (course["pastQuestions"] as List?) ?? [],
-                      assignments: (course["assignments"] as List?) ?? [],
-                    ),
-                  ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: (course["color"] as Color)
-                            .withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Icon(
-                        course["icon"] as IconData,
-                        color: course["color"] as Color,
-                        size: 30,
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    Text(
-                      course["title"] as String,
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? AcademicTheme.darkTextPrimary : AcademicTheme.textPrimary,
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Text(
-                      course["subtitle"] as String,
-                      style: TextStyle(
-                        color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary,
-                        fontSize: 13,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Row(
-                      children: [
-                        const Icon(Icons.bookmark_outline_rounded, size: 12, color: AcademicTheme.accent),
-                        const SizedBox(width: 4),
-                        Text(
-                          "3 Credit Units",
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const Spacer(),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: (course["color"] as Color)
-                            .withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Text(
-                        "Open Course",
-                        style: TextStyle(
-                          color: course["color"] as Color,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            );
-          },
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AcademicTheme.accent,
+          indicatorWeight: 4,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          tabs: const [
+            Tab(text: "First Semester"),
+            Tab(text: "Second Semester"),
+          ],
         ),
       ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildCourseList(1),
+          _buildCourseList(2),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCourseList(int semester) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final courses = CourseData.getCourses().where((c) => c['semester'] == semester).toList();
+
+    if (courses.isEmpty) {
+      return Center(
+        child: Text(
+          "No courses registered for this semester",
+          style: TextStyle(color: isDark ? Colors.white60 : Colors.grey),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: courses.length,
+      padding: const EdgeInsets.all(16),
+      itemBuilder: (context, index) {
+        final course = courses[index];
+        final credits = course["credits"] as int? ?? 3;
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: isDark ? AcademicTheme.darkCard : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            leading: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: (isDark ? AcademicTheme.darkPrimary : AcademicTheme.primary).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Icon(
+                course["icon"] as IconData? ?? Icons.book_rounded,
+                color: isDark ? AcademicTheme.darkPrimary : AcademicTheme.primary,
+              ),
+            ),
+            title: Text(
+              course["title"].toString(),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: isDark ? AcademicTheme.darkTextPrimary : AcademicTheme.textPrimary,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  course["subtitle"].toString(),
+                  style: TextStyle(
+                    color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "$credits Credit Units",
+                  style: const TextStyle(
+                    color: AcademicTheme.accent,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AcademicTheme.accent),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PDFPage(
+                    courseTitle: course["title"] as String,
+                    pdfs: (course["pdfs"] as List?) ?? [],
+                    videos: (course["videos"] as List?) ?? [],
+                    pastQuestions: (course["pastQuestions"] as List?) ?? [],
+                    assignments: (course["assignments"] as List? ?? []).cast<Assignment>(),
+                    isAdmin: widget.isAdmin,
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'data/timetable_data.dart';
 import 'SmartPDFViewerPage.dart';
 import 'youtube_videos_page.dart';
+import 'utils/responsive_utils.dart';
 
 class BookmarksPage extends StatefulWidget {
   const BookmarksPage({super.key});
@@ -77,90 +78,95 @@ class _BookmarksPageState extends State<BookmarksPage> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AcademicTheme.primary))
-          : _bookmarks.isEmpty
-              ? _buildEmptyState(isDark)
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _bookmarks.length,
-                  itemBuilder: (context, index) {
-                    final bookmark = _bookmarks[index];
-                    final isPdf = bookmark['type'] == 'pdf';
-                    final deleting = _isDeleting[index] ?? false;
-                    
-                    return _ThanosEffect(
-                      isDeleting: deleting,
-                      child: Card(
-                        color: isDark ? AcademicTheme.darkCard : Colors.white,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: (isPdf ? Colors.red : Colors.blue).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              isPdf ? Icons.picture_as_pdf : Icons.play_circle_fill,
-                              color: isPdf ? Colors.red : Colors.blue,
-                              size: 28,
-                            ),
-                          ),
-                          title: Text(
-                            bookmark['title'], 
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? AcademicTheme.darkTextPrimary : AcademicTheme.textPrimary,
-                            )
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(
-                              bookmark['course'] ?? "General",
-                              style: TextStyle(
-                                color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary,
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: AcademicTheme.primary))
+              : _bookmarks.isEmpty
+                  ? _buildEmptyState(isDark)
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _bookmarks.length,
+                      itemBuilder: (context, index) {
+                        final bookmark = _bookmarks[index];
+                        final isPdf = bookmark['type'] == 'pdf';
+                        final deleting = _isDeleting[index] ?? false;
+                        
+                        return _ThanosEffect(
+                          isDeleting: deleting,
+                          child: Card(
+                            color: isDark ? AcademicTheme.darkCard : Colors.white,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: (isPdf ? Colors.red : Colors.blue).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  isPdf ? Icons.picture_as_pdf : Icons.play_circle_fill,
+                                  color: isPdf ? Colors.red : Colors.blue,
+                                  size: 28,
+                                ),
                               ),
+                              title: Text(
+                                bookmark['title'], 
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? AcademicTheme.darkTextPrimary : AcademicTheme.textPrimary,
+                                )
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  bookmark['course'] ?? "General",
+                                  style: TextStyle(
+                                    color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                onPressed: () => _removeBookmark(index),
+                              ),
+                              onTap: deleting ? null : () async {
+                                if (isPdf) {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => SmartPDFViewerPage(
+                                        title: bookmark['title'],
+                                        assetPath: bookmark['path'],
+                                        courseName: bookmark['course'] ?? "General",
+                                      ),
+                                    ),
+                                  );
+                                  _loadBookmarks();
+                                } else {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => VideoPlayerPage(
+                                        videoUrl: bookmark['url'],
+                                        title: bookmark['title'],
+                                      ),
+                                    ),
+                                  );
+                                  _loadBookmarks();
+                                }
+                              },
                             ),
                           ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                            onPressed: () => _removeBookmark(index),
-                          ),
-                          onTap: deleting ? null : () async {
-                            if (isPdf) {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => SmartPDFViewerPage(
-                                    title: bookmark['title'],
-                                    assetPath: bookmark['path'],
-                                    courseName: bookmark['course'] ?? "General",
-                                  ),
-                                ),
-                              );
-                              _loadBookmarks();
-                            } else {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => VideoPlayerPage(
-                                    videoUrl: bookmark['url'],
-                                    title: bookmark['title'],
-                                  ),
-                                ),
-                              );
-                              _loadBookmarks();
-                            }
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
+        ),
+      ),
     );
   }
 

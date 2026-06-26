@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'data/timetable_data.dart';
+import 'utils/responsive_utils.dart';
 
 class TimetablePage extends StatelessWidget {
   const TimetablePage({super.key});
@@ -17,97 +18,105 @@ class TimetablePage extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: timetable.length,
-        itemBuilder: (context, index) {
-          final day = timetable.keys.elementAt(index);
-          final classes = timetable[day] ?? [];
-          final isToday = _isDayToday(day);
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 24),
-            decoration: BoxDecoration(
-              color: isDark ? AcademicTheme.darkCard : Colors.white,
-              borderRadius: BorderRadius.circular(25),
-              border: isToday 
-                ? Border.all(color: AcademicTheme.accent.withOpacity(0.5), width: 2)
-                : null,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: Responsive.isDesktop(context) ? 900 : double.infinity),
+          child: ListView.builder(
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.getHorizontalPadding(context),
+              vertical: 16,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Day Header
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  decoration: BoxDecoration(
-                    color: isToday 
-                        ? AcademicTheme.accent 
-                        : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100]),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        day,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isToday 
-                              ? Colors.white 
-                              : (isDark ? AcademicTheme.darkTextPrimary : AcademicTheme.primary),
-                        ),
-                      ),
-                      if (isToday)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            "TODAY",
-                            style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+            itemCount: timetable.length,
+            itemBuilder: (context, index) {
+              final day = timetable.keys.elementAt(index);
+              final classes = timetable[day] ?? [];
+              final isToday = _isDayToday(day);
 
-                // Classes List
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: classes.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Text(
-                              "Lecture free day! 🌴",
-                              style: TextStyle(
-                                color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary,
-                                fontStyle: FontStyle.italic,
-                              ),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: isDark ? AcademicTheme.darkCard : Colors.white,
+                  borderRadius: BorderRadius.circular(25),
+                  border: isToday 
+                    ? Border.all(color: AcademicTheme.accent.withValues(alpha: 0.5), width: 2)
+                    : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Day Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      decoration: BoxDecoration(
+                        color: isToday 
+                            ? AcademicTheme.accent 
+                            : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[100]),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            day,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isToday 
+                                  ? Colors.white 
+                                  : (isDark ? AcademicTheme.darkTextPrimary : AcademicTheme.primary),
                             ),
                           ),
-                        )
-                      : Column(
-                          children: classes.map((c) {
-                            return _buildClassItem(context, c, isDark);
-                          }).toList(),
-                        ),
+                          if (isToday)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Text(
+                                "TODAY",
+                                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+
+                    // Classes List
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: classes.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                child: Text(
+                                  "Lecture free day! 🌴",
+                                  style: TextStyle(
+                                    color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Column(
+                              children: classes.map((c) {
+                                return _buildClassItem(context, c, isDark);
+                              }).toList(),
+                            ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -191,7 +200,7 @@ class TimetablePage extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.03) : Colors.grey[50],
+                color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey[50],
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(

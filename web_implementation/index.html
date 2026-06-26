@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Readr Web - Your Study Companion</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#004AAD">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#004AAD',
+                        secondary: '#002D62',
+                        accent: '#FFD700',
+                        darkBg: '#121212',
+                        darkCard: '#1E1E1E',
+                    },
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-outfit bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300">
+
+        <!-- Sidebar / Navigation Rail (Desktop) -->
+        <aside id="sidebar" class="fixed left-0 top-0 h-full w-20 bg-white dark:bg-darkCard border-r border-gray-200 dark:border-gray-800 flex-col items-center py-8 hidden md:flex z-50">
+            <div class="mb-10">
+                <img src="../assets/logo.png" alt="Logo" class="w-12 h-12 rounded-xl">
+            </div>
+            <nav class="flex flex-col space-y-8 flex-1">
+                <button onclick="showPage('home')" class="nav-item active group" title="Home">
+                    <i class="fa-solid fa-house text-xl"></i>
+                    <span class="text-[10px] font-bold mt-1 uppercase opacity-0 group-hover:opacity-100 transition-opacity">Home</span>
+                </button>
+                <button onclick="showPage('courses')" class="nav-item group" title="Learn">
+                    <i class="fa-solid fa-book text-xl"></i>
+                    <span class="text-[10px] font-bold mt-1 uppercase opacity-0 group-hover:opacity-100 transition-opacity">Learn</span>
+                </button>
+                <button onclick="showPage('assistant')" class="nav-item group" title="Assistant">
+                    <i class="fa-solid fa-comment-dots text-xl"></i>
+                    <span class="text-[10px] font-bold mt-1 uppercase opacity-0 group-hover:opacity-100 transition-opacity">AI</span>
+                </button>
+                <button onclick="showPage('forum')" class="nav-item group" title="Forum">
+                    <div class="relative">
+                        <i class="fa-solid fa-users text-xl"></i>
+                        <div id="forum-dot" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-darkCard hidden"></div>
+                    </div>
+                    <span class="text-[10px] font-bold mt-1 uppercase opacity-0 group-hover:opacity-100 transition-opacity">Forum</span>
+                </button>
+                <button onclick="showPage('bookmarks')" class="nav-item group" title="Saved">
+                    <i class="fa-solid fa-bookmark text-xl"></i>
+                    <span class="text-[10px] font-bold mt-1 uppercase opacity-0 group-hover:opacity-100 transition-opacity">Saved</span>
+                </button>
+            </nav>
+            <button onclick="toggleDarkMode()" class="nav-item group mb-4">
+                <i id="theme-icon" class="fa-solid fa-moon text-xl"></i>
+            </button>
+            <button onclick="logout()" class="nav-item group text-red-500 hover:bg-red-50">
+                <i class="fa-solid fa-right-from-bracket text-xl"></i>
+            </button>
+        </aside>
+
+    <!-- Mobile Header -->
+    <header class="md:hidden fixed top-0 left-0 w-full bg-white dark:bg-darkCard border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex justify-between items-center z-50">
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleMobileMenu()"><i class="fa-solid fa-bars text-xl"></i></button>
+            <span class="font-bold text-lg text-primary">Readr</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div id="sync-indicator-mobile" class="hidden">
+                 <i class="fa-solid fa-sync fa-spin text-green-500 text-sm"></i>
+            </div>
+            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold" id="header-avatar">M</div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="md:ml-20 pt-16 md:pt-0 min-h-screen pb-20 md:pb-0">
+
+        <!-- Dashboard / Home -->
+        <section id="page-home" class="page-container p-6 md:p-10 max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-gray-500 dark:text-gray-400 text-lg" id="greeting">Good Morning!</h2>
+                    <h1 class="text-4xl font-black text-primary dark:text-blue-400" id="user-name">Student</h1>
+                </div>
+
+                <!-- Sync Progress (Desktop) -->
+                <div id="sync-container" class="mt-4 md:mt-0 flex items-center bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-2xl px-4 py-2 hidden">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-xs font-bold text-green-700 dark:text-green-400">SYNCING <span id="sync-percent">0%</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="relative overflow-hidden bg-gradient-to-br from-primary via-blue-700 to-secondary p-10 rounded-[3rem] text-white shadow-2xl shadow-blue-500/20 mb-10 group">
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-1000"></div>
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between">
+                    <div class="max-w-xl">
+                        <div class="inline-flex items-center px-4 py-1 bg-white/10 rounded-full text-[10px] font-extrabold tracking-widest uppercase mb-6 backdrop-blur-md">
+                            <i class="fa-solid fa-sparkles mr-2 text-accent"></i>
+                            Your Academic Journey
+                        </div>
+                        <h2 class="text-4xl md:text-5xl font-black mb-4 leading-tight">Master your courses with AI-powered insights.</h2>
+                        <p class="text-lg opacity-80 mb-8">Access all your course materials, past questions, and AI assistance in one premium workspace.</p>
+                        <button onclick="showPage('courses')" class="bg-white text-primary px-8 py-4 rounded-[1.5rem] font-black hover:scale-105 active:scale-95 transition-all shadow-xl">
+                            Start Learning Now
+                        </button>
+                    </div>
+                    <div class="hidden md:block">
+                        <i class="fa-solid fa-graduation-cap text-[12rem] opacity-10 -rotate-12"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discovery / Quick Access -->
+            <h3 class="text-xl font-bold mb-6">Discovery</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+                <button onclick="showPage('resources')" class="course-card !flex-row items-center p-6">
+                    <div class="icon-wrapper !mb-0 mr-4"><i class="fa-solid fa-globe"></i></div>
+                    <div class="text-left">
+                        <h4 class="font-bold">Resources</h4>
+                        <p class="text-[10px] text-gray-500">External libraries</p>
+                    </div>
+                </button>
+                <button onclick="showPage('assistant')" class="course-card !flex-row items-center p-6">
+                    <div class="icon-wrapper !mb-0 mr-4"><i class="fa-solid fa-robot"></i></div>
+                    <div class="text-left">
+                        <h4 class="font-bold">AI Chat</h4>
+                        <p class="text-[10px] text-gray-500">24/7 AI Tutor</p>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Courses Grid -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">My Courses</h3>
+                <button onclick="showPage('courses')" class="text-accent font-bold hover:underline">See All</button>
+            </div>
+            <div id="course-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                <!-- Courses will be injected here -->
+            </div>
+
+            <!-- Recent Activity -->
+            <div id="recent-activity-container" class="hidden">
+                <h3 class="text-xl font-bold mb-6">Recent Activity</h3>
+                <div id="recent-card" class="bg-white dark:bg-darkCard p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center group cursor-pointer">
+                    <div id="recent-icon" class="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center text-red-500 mr-4">
+                        <i class="fa-solid fa-file-pdf text-2xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 id="recent-title" class="font-bold text-lg truncate">No recent activity</h4>
+                        <p id="recent-subtitle" class="text-gray-500 dark:text-gray-400 text-sm truncate">Start learning to see updates</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-primary opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Course Material List Page -->
+        <section id="page-materials" class="page-container p-6 md:p-10 max-w-4xl mx-auto hidden">
+            <div class="flex items-center mb-8">
+                <button onclick="showPage('home')" class="mr-4 w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-darkCard shadow-sm hover:text-primary">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h1 id="materials-title" class="text-2xl font-black">Course Materials</h1>
+            </div>
+            <div id="materials-list" class="space-y-4">
+                <!-- Materials will be injected here -->
+            </div>
+        </section>
+
+        <!-- All Courses Page -->
+        <section id="page-courses" class="page-container p-6 md:p-10 max-w-6xl mx-auto hidden">
+            <div class="flex items-center mb-8">
+                <button onclick="showPage('home')" class="mr-4 w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-darkCard shadow-sm hover:text-primary">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h1 class="text-3xl font-black">All Courses</h1>
+            </div>
+            <div id="all-courses-grid" class="space-y-12">
+                <!-- Courses injected here with semester headers -->
+            </div>
+        </section>
+
+        <!-- Timetable Page -->
+        <section id="page-timetable" class="page-container p-6 md:p-10 max-w-4xl mx-auto hidden">
+            <h1 class="text-3xl font-black mb-8">Timetable</h1>
+            <div id="timetable-content" class="grid grid-cols-1 gap-6">
+                <!-- Timetable logic here -->
+            </div>
+        </section>
+
+        <!-- AI Assistant Page -->
+        <section id="page-assistant" class="page-container h-[calc(100vh-80px)] md:h-screen flex flex-col hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-darkCard">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white mr-4">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">AI Assistant</h1>
+                        <p class="text-xs text-green-500 font-medium">Online & Ready</p>
+                    </div>
+                </div>
+                <button onclick="clearChat()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-darkBg/50">
+                <div class="chat-bubble bot">
+                    Hello! I'm your Readr Assistant. How can I help you with your studies today?
+                </div>
+            </div>
+            <div class="p-4 bg-white dark:bg-darkCard border-t border-gray-200 dark:border-gray-800">
+                <form id="chat-form" class="flex space-x-2">
+                    <input type="text" id="chat-input" placeholder="Ask anything about your courses..." class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl px-6 py-3 focus:ring-2 focus:ring-primary outline-none">
+                    <button type="submit" class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Community Forum Page -->
+        <section id="page-forum" class="page-container h-[calc(100vh-80px)] md:h-screen flex flex-col hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-darkCard">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary mr-4">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">Community Forum</h1>
+                        <p class="text-xs text-gray-500">Connect with fellow ECE students</p>
+                    </div>
+                </div>
+            </div>
+            <div id="forum-messages" class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- Messages injected here -->
+            </div>
+            <div class="p-4 bg-white dark:bg-darkCard border-t border-gray-200 dark:border-gray-800">
+                <div class="flex items-center space-x-2">
+                    <button class="w-10 h-10 text-gray-400 hover:text-primary"><i class="fa-solid fa-image text-xl"></i></button>
+                    <input type="text" id="forum-input" placeholder="Type a message..." class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl px-6 py-3 focus:ring-2 focus:ring-primary outline-none">
+                    <button onclick="sendForumMessage()" class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Assignments Tracker Page -->
+        <section id="page-assignments" class="page-container p-6 md:p-10 max-w-4xl mx-auto hidden">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-3xl font-black">Assignments</h1>
+                <button onclick="showAddAssignmentModal()" class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+            <div id="assignments-list" class="space-y-4">
+                <!-- Assignments injected here -->
+            </div>
+        </section>
+
+        <!-- Resources Page -->
+        <section id="page-resources" class="page-container p-6 md:p-10 max-w-4xl mx-auto hidden">
+            <h1 class="text-3xl font-black mb-8">External Resources</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <a href="https://ieeexplore.ieee.org/" target="_blank" class="course-card">
+                    <div class="icon-wrapper"><i class="fa-solid fa-microchip"></i></div>
+                    <h4 class="font-bold text-lg">IEEE Xplore</h4>
+                    <p class="text-xs text-gray-500">Digital library for electrical engineering and computer science.</p>
+                </a>
+                <a href="https://ocw.mit.edu/" target="_blank" class="course-card">
+                    <div class="icon-wrapper"><i class="fa-solid fa-university"></i></div>
+                    <h4 class="font-bold text-lg">MIT OpenCourseWare</h4>
+                    <p class="text-xs text-gray-500">Free lecture notes, exams, and videos from MIT.</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Bookmarks Page -->
+        <section id="page-bookmarks" class="page-container p-6 md:p-10 max-w-4xl mx-auto hidden">
+            <h1 class="text-3xl font-black mb-8">Saved Materials</h1>
+            <div id="bookmarks-list" class="space-y-4">
+                <div class="text-center py-20">
+                    <i class="fa-solid fa-bookmark text-6xl text-gray-200 mb-4"></i>
+                    <p class="text-gray-500">No saved materials yet.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PDF Viewer Modal -->
+        <div id="pdf-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex-col">
+            <div class="p-4 flex justify-between items-center text-white border-b border-white/10">
+                <h2 id="pdf-viewer-title" class="font-bold">Viewing PDF</h2>
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleBookmarkInViewer()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                        <i id="pdf-viewer-bookmark-icon" class="fa-regular fa-bookmark"></i>
+                    </button>
+                    <button onclick="closePdf()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 relative overflow-hidden flex items-center justify-center">
+                <div id="pdf-loader" class="absolute inset-0 flex items-center justify-center bg-black/50 z-10 hidden">
+                    <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <iframe id="pdf-iframe" class="w-full h-full border-none bg-white" src=""></iframe>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Mobile Navigation Bar -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-darkCard border-t border-gray-200 dark:border-gray-800 px-4 py-2 flex justify-around items-center z-50">
+        <button onclick="showPage('home')" class="mobile-nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </button>
+        <button onclick="showPage('courses')" class="mobile-nav-item">
+            <i class="fa-solid fa-book"></i>
+            <span>Learn</span>
+        </button>
+        <button onclick="showPage('assistant')" class="mobile-nav-item">
+            <i class="fa-solid fa-comment-dots"></i>
+            <span>AI</span>
+        </button>
+        <button onclick="showPage('forum')" class="mobile-nav-item">
+            <i class="fa-solid fa-users"></i>
+            <span>Forum</span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu / Drawer overlay -->
+    <div id="mobile-drawer" class="fixed inset-0 bg-black/50 z-[60] opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="drawer-content" class="absolute left-0 top-0 h-full w-4/5 max-w-xs bg-white dark:bg-darkCard shadow-2xl translate-x-[-100%] transition-transform duration-300 flex flex-col">
+            <div class="p-6 bg-primary text-white">
+                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary text-2xl font-bold mb-4">M</div>
+                <h2 class="text-xl font-bold" id="drawer-user-name">Student</h2>
+                <p class="text-sm opacity-80">ECE Department</p>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-2">
+                <button onclick="toggleDarkMode()" class="drawer-link">
+                    <i class="fa-solid fa-circle-half-stroke mr-3"></i> Theme Mode
+                </button>
+                <div class="border-t border-gray-100 dark:border-gray-800 my-2"></div>
+                <div class="p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold">Offline Sync</span>
+                        <button onclick="startManualSync()" class="text-primary"><i class="fa-solid fa-rotate"></i></button>
+                    </div>
+                    <div id="drawer-sync-status" class="text-xs text-gray-500">All materials ready</div>
+                </div>
+                <button onclick="showStorageManager()" class="drawer-link">
+                    <i class="fa-solid fa-database mr-3"></i> Storage Management
+                </button>
+                <div class="border-t border-gray-100 dark:border-gray-800 my-2"></div>
+                <button onclick="logout()" class="drawer-link text-red-500">
+                    <i class="fa-solid fa-right-from-bracket mr-3"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Storage Manager Modal -->
+    <div id="storage-modal" class="fixed inset-0 bg-black/50 z-[110] flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-darkCard rounded-[2rem] p-8 max-w-md w-full shadow-2xl">
+            <h2 class="text-2xl font-black mb-4">Storage Management</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">Cleaning the cache will remove all offline materials. You will need to re-sync to access them without internet.</p>
+            <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-2xl mb-8">
+                <p class="text-sm">Total Storage Used: <span id="storage-usage" class="font-bold">0.0 MB</span></p>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="hideStorageManager()" class="flex-1 py-3 font-bold border border-gray-200 dark:border-gray-700 rounded-xl">Cancel</button>
+                <button onclick="clearOfflineCache()" class="flex-1 py-3 font-bold bg-red-500 text-white rounded-xl shadow-lg shadow-red-500/20">Clear Cache</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div id="video-modal" class="fixed inset-0 z-[300] hidden items-center justify-center p-4">
+        <div class="bg-black rounded-3xl overflow-hidden w-full max-w-5xl shadow-2xl relative">
+            <button onclick="closeVideoPlayer()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="video-container">
+                <iframe id="video-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+            <div class="p-6 bg-darkCard border-t border-white/5">
+                <h3 id="video-modal-title" class="text-xl font-bold text-white">Video Title</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/sync-service.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-primary/95 dark:bg-black/95 backdrop-blur-2xl z-[200] hidden items-center justify-center p-4">
+        <div class="bg-white/90 dark:bg-darkCard/90 backdrop-blur-md rounded-[3.5rem] p-10 md:p-16 max-w-xl w-full shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] text-center border border-white/20 relative overflow-hidden">
+            <!-- Decorative Glows -->
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-primary/20 rounded-full blur-[80px]"></div>
+            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-accent/20 rounded-full blur-[80px]"></div>
+
+            <div class="relative z-10">
+                <div class="w-24 h-24 mx-auto mb-8 relative">
+                    <div class="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl animate-pulse"></div>
+                    <img src="../assets/logo.png" class="w-full h-full relative z-10 rounded-[2rem] shadow-2xl">
+                </div>
+
+                <h2 class="text-4xl md:text-5xl font-black mb-4 bg-gradient-to-br from-primary to-blue-700 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent tracking-tight">
+                    Welcome to Readr
+                </h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-12 text-lg font-medium">Elevating your academic experience</p>
+
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-6">
+                    <div class="space-y-2">
+                        <div class="group relative">
+                            <i class="fa-solid fa-id-card absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                            <input type="text" id="login-regno" required placeholder="Registration Number"
+                                class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-primary/20 dark:focus:border-blue-400/20 rounded-[1.5rem] pl-14 pr-6 py-5 focus:bg-white dark:focus:bg-gray-800 outline-none font-semibold text-lg transition-all">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="group relative">
+                            <i class="fa-solid fa-user absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                            <input type="text" id="login-surname" required placeholder="Surname"
+                                class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-primary/20 dark:focus:border-blue-400/20 rounded-[1.5rem] pl-14 pr-6 py-5 focus:bg-white dark:focus:bg-gray-800 outline-none font-semibold text-lg transition-all">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="group relative">
+                            <i class="fa-solid fa-lock absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                            <input type="password" id="login-password" required placeholder="Password"
+                                class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-primary/20 dark:focus:border-blue-400/20 rounded-[1.5rem] pl-14 pr-6 py-5 focus:bg-white dark:focus:bg-gray-800 outline-none font-semibold text-lg transition-all">
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <button type="submit" class="w-full py-5 bg-primary text-white rounded-[1.5rem] font-black text-xl shadow-[0_20px_40px_rgba(0,74,173,0.3)] hover:scale-[1.03] active:scale-95 transition-all duration-300 relative overflow-hidden group">
+                            <span class="relative z-10">Sign In</span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 skew-x-12"></div>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-12 flex items-center justify-center space-x-4">
+                    <div class="h-[1px] w-8 bg-gray-200 dark:bg-gray-800"></div>
+                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em]">Proudly ECE UNIZIK</p>
+                    <div class="h-[1px] w-8 bg-gray-200 dark:bg-gray-800"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

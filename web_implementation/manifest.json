@@ -1,0 +1,21 @@
+{
+  "name": "Readr Web - Your Study Companion",
+  "short_name": "Readr",
+  "description": "A standalone education companion for ECE students.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#004AAD",
+  "theme_color": "#004AAD",
+  "icons": [
+    {
+      "src": "../assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'services/notification_service.dart';
 import 'data/timetable_data.dart';
 import 'package:intl/intl.dart';
+import 'utils/responsive_utils.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -63,54 +64,59 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _history.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.notifications_off_outlined, size: 80, color: isDark ? AcademicTheme.darkTextSecondary : Colors.grey),
-                      const SizedBox(height: 16),
-                      Text("No notifications yet", style: TextStyle(fontSize: 18, color: isDark ? AcademicTheme.darkTextSecondary : Colors.grey)),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _history.length,
-                  itemBuilder: (context, index) {
-                    final item = _history[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: theme.cardTheme.color,
-                        borderRadius: BorderRadius.circular(16),
-                        border: item.isRead 
-                          ? null 
-                          : Border.all(color: isDark ? AcademicTheme.darkPrimary : AcademicTheme.primary, width: 1),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _history.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.notifications_off_outlined, size: 80, color: isDark ? AcademicTheme.darkTextSecondary : Colors.grey),
+                          const SizedBox(height: 16),
+                          Text("No notifications yet", style: TextStyle(fontSize: 18, color: isDark ? AcademicTheme.darkTextSecondary : Colors.grey)),
+                        ],
                       ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: (isDark ? AcademicTheme.darkPrimary : AcademicTheme.primary).withOpacity(0.1),
-                          child: Icon(Icons.notifications, color: isDark ? AcademicTheme.darkPrimary : AcademicTheme.primary),
-                        ),
-                        title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item.body),
-                            const SizedBox(height: 4),
-                            Text(
-                              DateFormat('MMM d, h:mm a').format(item.timestamp),
-                              style: TextStyle(fontSize: 11, color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _history.length,
+                      itemBuilder: (context, index) {
+                        final item = _history[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: theme.cardTheme.color,
+                            borderRadius: BorderRadius.circular(16),
+                            border: item.isRead 
+                              ? null 
+                              : Border.all(color: isDark ? AcademicTheme.darkPrimary : AcademicTheme.primary, width: 1),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: (isDark ? AcademicTheme.darkPrimary : AcademicTheme.primary).withValues(alpha: 0.1),
+                              child: Icon(Icons.notifications, color: isDark ? AcademicTheme.darkPrimary : AcademicTheme.primary),
                             ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                            title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(item.body),
+                                const SizedBox(height: 4),
+                                Text(
+                                  DateFormat('MMM d, h:mm a').format(item.timestamp),
+                                  style: TextStyle(fontSize: 11, color: isDark ? AcademicTheme.darkTextSecondary : AcademicTheme.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ),
     );
   }
 }
