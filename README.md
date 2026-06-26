@@ -1,6 +1,6 @@
-# readr
+# Readr
 
-A new Flutter project.
+Your reliable study companion
 
 ## Getting Started
 
