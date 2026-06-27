@@ -944,9 +944,10 @@ function deleteAssignment(index) {
 function toggleMobileMenu() {
     const drawer = document.getElementById('mobile-drawer');
     const content = document.getElementById('drawer-content');
+    if (!drawer || !content) return;
     drawer.classList.toggle('opacity-0');
     drawer.classList.toggle('pointer-events-none');
-    content.classList.toggle('translate-x-[-120%]');
+    content.classList.toggle('-translate-x-full');
 }
 
 function hideMobileMenu() {
@@ -955,7 +956,7 @@ function hideMobileMenu() {
     if (!drawer || !content) return;
     drawer.classList.add('opacity-0');
     drawer.classList.add('pointer-events-none');
-    content.classList.add('translate-x-[-120%]');
+    content.classList.add('-translate-x-full');
 }
 
 // Storage Management
