@@ -950,12 +950,10 @@ function toggleMobileMenu() {
 
     if (isHidden) {
         drawer.classList.remove('opacity-0', 'pointer-events-none');
-        content.classList.remove('translate-x-[-120%]', '-translate-x-full');
-        content.classList.add('translate-x-0');
+        content.style.transform = 'translateX(0)';
     } else {
         drawer.classList.add('opacity-0', 'pointer-events-none');
-        content.classList.remove('translate-x-0');
-        content.classList.add('translate-x-[-120%]');
+        content.style.transform = 'translateX(-120%)';
     }
 }
 
@@ -964,8 +962,7 @@ function hideMobileMenu() {
     const content = document.getElementById('drawer-content');
     if (!drawer || !content) return;
     drawer.classList.add('opacity-0', 'pointer-events-none');
-    content.classList.remove('translate-x-0');
-    content.classList.add('translate-x-[-120%]');
+    content.style.transform = 'translateX(-120%)';
 }
 
 // Storage Management
