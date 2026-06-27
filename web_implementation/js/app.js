@@ -945,18 +945,27 @@ function toggleMobileMenu() {
     const drawer = document.getElementById('mobile-drawer');
     const content = document.getElementById('drawer-content');
     if (!drawer || !content) return;
-    drawer.classList.toggle('opacity-0');
-    drawer.classList.toggle('pointer-events-none');
-    content.classList.toggle('-translate-x-full');
+
+    const isHidden = drawer.classList.contains('opacity-0');
+
+    if (isHidden) {
+        drawer.classList.remove('opacity-0', 'pointer-events-none');
+        content.classList.remove('translate-x-[-120%]', '-translate-x-full');
+        content.classList.add('translate-x-0');
+    } else {
+        drawer.classList.add('opacity-0', 'pointer-events-none');
+        content.classList.remove('translate-x-0');
+        content.classList.add('translate-x-[-120%]');
+    }
 }
 
 function hideMobileMenu() {
     const drawer = document.getElementById('mobile-drawer');
     const content = document.getElementById('drawer-content');
     if (!drawer || !content) return;
-    drawer.classList.add('opacity-0');
-    drawer.classList.add('pointer-events-none');
-    content.classList.add('-translate-x-full');
+    drawer.classList.add('opacity-0', 'pointer-events-none');
+    content.classList.remove('translate-x-0');
+    content.classList.add('translate-x-[-120%]');
 }
 
 // Storage Management
