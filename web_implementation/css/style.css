@@ -386,51 +386,79 @@ body.lock-in-mode .glass {
 
 /* --- PDF Viewer --- */
 #pdf-modal {
-    background-color: rgba(2, 6, 23, 0.95);
-    backdrop-filter: blur(10px);
+    background-color: rgba(2, 6, 23, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .glass-header {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    z-index: 10;
+}
+
+#pdf-iframe {
+    transition: all 0.5s ease;
+    background-color: #fff;
+    width: 100%;
+    height: 100%;
+    border-radius: 2rem;
 }
 
 @media (max-width: 768px) {
     .glass-header {
-        padding: 1rem 1.5rem;
+        padding: 0.75rem 1.25rem;
     }
 
-    #pdf-modal iframe {
-        border-radius: 1.5rem;
+    .glass-header h2 {
+        font-size: 1rem;
     }
 
     #pdf-modal .flex-1 {
-        padding: 1rem;
+        padding: 0.75rem !important;
+    }
+
+    #pdf-iframe {
+        border-radius: 1rem !important;
     }
 }
 
 /* --- Forum Enhancements --- */
 #page-forum {
+    display: flex;
+    flex-direction: column;
     max-width: 64rem;
     margin: 0 auto;
+    /* Use dynamic height to fill screen without fighting navs */
+    height: calc(100vh - 40px);
+    padding-bottom: 0 !important;
 }
 
 #forum-messages {
+    flex: 1;
+    overflow-y: auto;
     scrollbar-width: thin;
-    padding-bottom: 1rem;
+    padding-right: 0.5rem;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Ensure forum input doesn't get covered by mobile nav */
+/* Responsive Forum Adjustments */
 @media (max-width: 768px) {
     #page-forum {
-        height: calc(100vh - 180px); /* Adjusting for mobile header and bottom nav */
-        margin-bottom: 5rem;
+        height: calc(100vh - 180px); /* Account for mobile header and bottom nav */
+        margin-top: 0;
+        padding: 0.75rem !important;
+    }
+
+    #forum-messages {
+        padding-bottom: 1rem;
     }
 }
 
