@@ -384,6 +384,56 @@ body.lock-in-mode .glass {
     transform: translateY(0);
 }
 
+/* --- PDF Viewer --- */
+#pdf-modal {
+    background-color: rgba(2, 6, 23, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.glass-header {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+    .glass-header {
+        padding: 1rem 1.5rem;
+    }
+
+    #pdf-modal iframe {
+        border-radius: 1.5rem;
+    }
+
+    #pdf-modal .flex-1 {
+        padding: 1rem;
+    }
+}
+
+/* --- Forum Enhancements --- */
+#page-forum {
+    max-width: 64rem;
+    margin: 0 auto;
+}
+
+#forum-messages {
+    scrollbar-width: thin;
+    padding-bottom: 1rem;
+}
+
+/* Ensure forum input doesn't get covered by mobile nav */
+@media (max-width: 768px) {
+    #page-forum {
+        height: calc(100vh - 180px); /* Adjusting for mobile header and bottom nav */
+        margin-bottom: 5rem;
+    }
+}
+
 /* --- Forum Highlight --- */
 @keyframes highlightPulse {
     0% { transform: scale(1); }
