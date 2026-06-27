@@ -430,7 +430,7 @@ body.lock-in-mode .glass {
 }
 
 /* --- Forum Enhancements --- */
-#page-forum {
+#page-forum:not(.hidden) {
     display: flex;
     flex-direction: column;
     max-width: 64rem;
