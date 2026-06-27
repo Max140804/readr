@@ -435,8 +435,8 @@ body.lock-in-mode .glass {
     flex-direction: column;
     max-width: 64rem;
     margin: 0 auto;
-    /* Use dynamic height to fill screen without fighting navs */
-    height: calc(100vh - 40px);
+    /* Use dynamic height to fill screen */
+    height: calc(100vh - 80px); /* Adjusted for no bottom nav */
     padding-bottom: 0 !important;
 }
 
@@ -452,7 +452,7 @@ body.lock-in-mode .glass {
 /* Responsive Forum Adjustments */
 @media (max-width: 768px) {
     #page-forum {
-        height: calc(100vh - 180px); /* Account for mobile header and bottom nav */
+        height: calc(100vh - 100px); /* Only account for mobile top header */
         margin-top: 0;
         padding: 0.75rem !important;
     }
@@ -486,5 +486,5 @@ body.lock-in-mode .glass {
 
 /* --- RESPONSIVE --- */
 @media (max-width: 768px) {
-    main { margin-left: 0 !important; padding-bottom: 8rem !important; }
+    main { margin-left: 0 !important; padding-bottom: 2rem !important; }
 }
