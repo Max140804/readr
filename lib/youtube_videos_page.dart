@@ -4,6 +4,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/timetable_data.dart';
 import 'services/activity_service.dart';
+import 'services/sync_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'assistant_page.dart';
 
@@ -466,6 +467,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     });
 
     await prefs.setString('bookmarks', jsonEncode(bookmarks));
+    SyncService().pushToCloud();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Added to bookmarks")),

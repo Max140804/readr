@@ -8,6 +8,7 @@ import 'data/timetable_data.dart';
 import 'data/student_data.dart';
 import 'utils/responsive_utils.dart';
 import 'services/update_service.dart';
+import 'services/sync_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -118,7 +119,10 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setBool('isDev', isDeveloper);
 
       // Start background auth without waiting
-      _performBackgroundAuth(loginEmail, expectedPassword, identity, isAdmin, isDeveloper);
+      _performBackgroundAuth(loginEmail, expectedPassword, identity, isAdmin, isDeveloper).then((_) {
+        // After successful background auth, pull data from cloud
+        SyncService().pullFromCloud();
+      });
 
       if (mounted) {
         _proceedToDashboard(identity.firstName, effectiveUserId, isAdmin: isAdmin, isDev: isDeveloper);

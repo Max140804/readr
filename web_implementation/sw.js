@@ -14,8 +14,6 @@ const ASSETS_TO_CACHE = [
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
     'https://hcqaseovlciadogewnsw.supabase.co/storage/v1/object/public/materials/assets/notification_sound.mp3'
 ];
-    'https://hcqaseovlciadogewnsw.supabase.co/storage/v1/object/public/materials/assets/notification_sound.mp3'
-];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(

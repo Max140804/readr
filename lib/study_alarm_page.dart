@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'data/timetable_data.dart';
 import 'services/notification_service.dart';
+import 'services/sync_service.dart';
 import 'dart:io' show Platform;
 
 class StudyAlarmPage extends StatefulWidget {
@@ -213,6 +214,7 @@ class _StudyAlarmPageState extends State<StudyAlarmPage> with WidgetsBindingObse
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('scheduled_study_alarm', scheduledDateTime.toIso8601String());
       await prefs.setStringList('study_alarm_days', []);
+      SyncService().pushToCloud();
 
       setState(() {
         _isScheduled = true;
@@ -234,6 +236,7 @@ class _StudyAlarmPageState extends State<StudyAlarmPage> with WidgetsBindingObse
       await prefs.setInt('study_alarm_hour', _selectedTime.hour);
       await prefs.setInt('study_alarm_minute', _selectedTime.minute);
       await prefs.remove('scheduled_study_alarm');
+      SyncService().pushToCloud();
 
       setState(() {
         _isScheduled = true;
@@ -254,6 +257,7 @@ class _StudyAlarmPageState extends State<StudyAlarmPage> with WidgetsBindingObse
     await prefs.remove('study_alarm_days');
     await prefs.remove('study_alarm_hour');
     await prefs.remove('study_alarm_minute');
+    SyncService().pushToCloud();
     setState(() {
       _isScheduled = false;
       _selectedDays = [];

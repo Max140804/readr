@@ -6,6 +6,7 @@ import 'data/timetable_data.dart';
 import 'SmartPDFViewerPage.dart';
 import 'youtube_videos_page.dart';
 import 'utils/responsive_utils.dart';
+import 'services/sync_service.dart';
 
 class BookmarksPage extends StatefulWidget {
   const BookmarksPage({super.key});
@@ -63,6 +64,7 @@ class _BookmarksPageState extends State<BookmarksPage> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('bookmarks', jsonEncode(_bookmarks));
+    SyncService().pushToCloud();
   }
 
   @override

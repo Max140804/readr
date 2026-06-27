@@ -12,6 +12,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'data/timetable_data.dart';
 import 'services/material_sync_service.dart';
+import 'services/sync_service.dart';
 import 'assistant_page.dart';
 import 'utils/responsive_utils.dart';
 
@@ -290,6 +291,7 @@ class _SmartPDFViewerPageState extends State<SmartPDFViewerPage> with SingleTick
       // Remove bookmark
       bookmarks.removeAt(index);
       await prefs.setString('bookmarks', jsonEncode(bookmarks));
+      SyncService().pushToCloud();
       if (mounted) {
         setState(() {
           _isBookmarked = false;
@@ -312,6 +314,7 @@ class _SmartPDFViewerPageState extends State<SmartPDFViewerPage> with SingleTick
     });
 
     await prefs.setString('bookmarks', jsonEncode(bookmarks));
+    SyncService().pushToCloud();
     if (mounted) {
       setState(() {
         _isBookmarked = true;

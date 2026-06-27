@@ -129,7 +129,7 @@ class CourseData {
       {
         "title": "ELE 574",
         "subtitle": "CONTROL SYSTEM ENGINEERING",
-        "icon": Icons.settings,
+        "icon": Icons.tune_rounded,
         "color": Colors.blueGrey,
         "credits": 3,
         "semester": 2,

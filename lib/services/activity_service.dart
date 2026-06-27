@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'sync_service.dart';
 
 class ActivityService {
   static final ActivityService _instance = ActivityService._internal();
@@ -31,6 +32,7 @@ class ActivityService {
       final supabase = Supabase.instance.client;
       final user = supabase.auth.currentUser;
       if (user != null) {
+        // Log to activity feed
         await supabase.from('student_activity').insert({
           'uid': user.id,
           'student_id': user.userMetadata?['reg_number'] ?? 'unknown',
@@ -43,6 +45,9 @@ class ActivityService {
           'course': course,
           'timestamp': DateTime.now().toIso8601String(),
         });
+
+        // Also update the persistent user_data (cloud-sync)
+        await SyncService().pushToCloud();
       }
     } catch (e) {
       debugPrint("Failed to sync activity to Supabase: $e");

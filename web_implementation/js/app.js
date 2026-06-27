@@ -8,6 +8,7 @@ let currentPage = 'home';
 let isDarkMode = localStorage.getItem('theme') === 'dark' || (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('theme'));
 let currentMaterials = [];
 let currentPdf = null;
+let isLockInEnabled = false;
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,10 +33,22 @@ function checkAuth() {
     } else {
         document.getElementById('user-name').innerText = user.name;
         document.getElementById('drawer-user-name').innerText = user.name;
-        const avatar = document.querySelector('.w-8.h-8.bg-primary.rounded-full');
+        const avatar = document.getElementById('header-avatar');
         if (avatar) avatar.innerText = user.name[0];
-        const drawerAvatar = document.querySelector('.w-16.h-16.bg-white.rounded-2xl');
+        const drawerAvatar = document.getElementById('drawer-avatar');
         if (drawerAvatar) drawerAvatar.innerText = user.name[0];
+
+        // Fetch remote data for already logged in user
+        fetchRemoteUserData(user.id).then(() => {
+            // Re-initialize theme in case it changed
+            isDarkMode = localStorage.getItem('theme') === 'dark';
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            initTheme();
+        });
     }
 }
 
@@ -46,26 +59,136 @@ function showLoginPage() {
 
 async function handleLogin(e) {
     e.preventDefault();
-    const regno = document.getElementById('login-regno').value;
-    const surname = document.getElementById('login-surname').value;
-    const password = document.getElementById('login-password').value;
+    const regno = document.getElementById('login-regno').value.trim();
+    const password = document.getElementById('login-password').value.trim();
 
-    if (!regno || !surname || !password) return;
+    if (!regno || !password) {
+        alert("Please fill all fields");
+        return;
+    }
 
-    // Simulate login / save to local storage
+    const searchId = regno.toUpperCase().split('@')[0].replace(/\s+/g, '');
+    let identity = null;
+
+    if (searchId === 'ADMIN') {
+        identity = { regNumber: 'ADMIN', surname: 'ADMIN', firstName: 'Administrator' };
+    } else if (searchId === 'DEV') {
+        identity = { regNumber: 'DEV', surname: 'DEV', firstName: 'Developer' };
+    } else {
+        identity = STUDENT_DATA.find(s => s.regNumber.toUpperCase().replace(/\s+/g, '') === searchId);
+    }
+
+    if (!identity) {
+        alert('Record not found for "' + searchId + '".');
+        return;
+    }
+
+    // Password validation
+    const hasAdminOverride = password === 'adminwas3';
+    const hasDevOverride = password === 'devmaxx';
+    let expectedPassword;
+
+    if (identity.regNumber === 'ADMIN' || hasAdminOverride) {
+        expectedPassword = 'adminwas3';
+    } else if (identity.regNumber === 'DEV' || hasDevOverride) {
+        expectedPassword = 'devmaxx';
+    } else {
+        expectedPassword = identity.surname.replace(/\s+/g, '').toLowerCase() + '123';
+    }
+
+    if (password !== expectedPassword) {
+        alert('Invalid Password.');
+        return;
+    }
+
+    const isAdmin = identity.regNumber === 'ADMIN' || hasAdminOverride;
+    const isDev = identity.regNumber === 'DEV' || hasDevOverride;
+    const effectiveUserId = identity.regNumber;
+
     const user = {
-        name: surname,
-        regno: regno,
-        id: 'user_' + Date.now()
+        name: identity.firstName,
+        regno: identity.regNumber,
+        id: effectiveUserId,
+        isAdmin: isAdmin,
+        isDev: isDev
     };
+
     localStorage.setItem('readr_user', JSON.stringify(user));
 
-    document.getElementById('login-modal').classList.add('hidden');
-    document.getElementById('login-modal').classList.remove('flex');
+    // Perform background auth (silent)
+    const loginEmail = isAdmin ? 'admin@readr.com' : isDev ? 'dev@readr.com' : `${identity.regNumber.replace(/[^a-zA-Z0-9]/g, '')}@readr.com`;
+    await performBackgroundAuth(loginEmail, expectedPassword, identity, isAdmin, isDev);
 
-    document.getElementById('user-name').innerText = surname;
+    // Fetch and sync data from Supabase before reloading
+    await fetchRemoteUserData(effectiveUserId);
 
-    location.reload(); // Refresh to ensure all components pick up user data
+    location.reload();
+}
+
+async function fetchRemoteUserData(userId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('user_data')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+
+        if (data) {
+            if (data.bookmarks) localStorage.setItem('bookmarks', JSON.stringify(data.bookmarks));
+            if (data.theme) localStorage.setItem('theme', data.theme);
+            if (data.recent_activity) localStorage.setItem('recent_activity', JSON.stringify(data.recent_activity));
+            if (data.study_alarm) localStorage.setItem('study_alarm', JSON.stringify(data.study_alarm));
+        }
+    } catch (e) {
+        console.error("Error fetching remote data:", e);
+    }
+}
+
+async function syncUserDataToSupabase() {
+    const user = JSON.parse(localStorage.getItem('readr_user'));
+    if (!user) return;
+
+    const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+    const theme = localStorage.getItem('theme') || 'light';
+    const recentActivity = JSON.parse(localStorage.getItem('recent_activity') || 'null');
+    const studyAlarm = JSON.parse(localStorage.getItem('study_alarm') || 'null');
+
+    try {
+        await supabaseClient
+            .from('user_data')
+            .upsert({
+                user_id: user.id,
+                bookmarks: bookmarks,
+                theme: theme,
+                recent_activity: recentActivity,
+                study_alarm: studyAlarm,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+    } catch (e) {
+        console.error("Error syncing to Supabase:", e);
+    }
+}
+
+async function performBackgroundAuth(email, password, identity, isAdmin, isDev) {
+    try {
+        await supabaseClient.auth.signInWithPassword({ email, password });
+    } catch (_) {
+        try {
+            await supabaseClient.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: `${identity.firstName} ${identity.surname}`,
+                        reg_number: identity.regNumber,
+                        role: isAdmin ? 'Admin' : isDev ? 'Developer' : 'Student',
+                    }
+                }
+            });
+        } catch (e) {
+            console.error("Background Auth Error:", e);
+        }
+    }
 }
 
 function registerServiceWorker() {
@@ -91,6 +214,8 @@ function toggleDarkMode() {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     const themeIcon = document.getElementById('theme-icon');
     if (themeIcon) themeIcon.className = isDarkMode ? 'fa-solid fa-sun text-xl' : 'fa-solid fa-moon text-xl';
+
+    syncUserDataToSupabase();
 }
 
 // Navigation
@@ -111,11 +236,11 @@ function showPage(pageId) {
     // Close mobile drawer if open
     hideMobileMenu();
 
-    if (pageId === 'assistant') loadChat();
     if (pageId === 'forum') loadForum();
     if (pageId === 'bookmarks') renderBookmarks();
     if (pageId === 'assignments') renderAssignments();
     if (pageId === 'courses') renderAllCourses();
+    if (pageId === 'timetable') renderTimetable();
 }
 
 function renderAllCourses() {
@@ -161,17 +286,14 @@ function switchSemesterTab(sem) {
 function renderCourseCard(course) {
     return `
         <div class="course-card" onclick="viewMaterials('${course.title}')">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary dark:text-blue-400 mb-4">
-                <i class="${course.icon}"></i>
+            <div class="icon-wrapper">
+                <i class="${course.icon} text-2xl"></i>
             </div>
-            <h4 class="font-bold text-lg">${course.title}</h4>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-1">${course.subtitle}</p>
-            <div class="flex items-center text-[10px] font-bold text-gray-400 mb-4">
-                <i class="fa-solid fa-bookmark mr-1 text-accent"></i>
-                ${course.credits} CREDIT UNITS
-            </div>
-            <div class="mt-auto">
-                <button class="w-full py-2 bg-blue-50 dark:bg-blue-900/20 text-primary dark:text-blue-400 rounded-xl font-bold text-sm">View</button>
+            <h4 class="font-[900] text-xl mb-2">${course.title}</h4>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-6 line-clamp-1">${course.subtitle}</p>
+            <div class="flex items-center text-[10px] font-[900] text-primary/60 dark:text-blue-400/60 tracking-[0.2em] uppercase mt-auto">
+                <i class="fa-solid fa-bookmark mr-2 text-accent"></i>
+                ${course.credits} Credits
             </div>
         </div>
     `;
@@ -185,121 +307,56 @@ function renderTimetable() {
     container.innerHTML = days.map(day => {
         const slots = TIMETABLE[day] || [];
         return `
-            <div class="space-y-4">
-                <h3 class="text-xl font-bold flex items-center">
-                    <span class="w-2 h-8 bg-primary rounded-full mr-3"></span>
+            <div class="space-y-6">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 dark:text-slate-500 flex items-center px-2">
+                    <span class="w-1 h-4 bg-primary rounded-full mr-3 shadow-[0_0_10px_rgba(0,74,173,0.5)]"></span>
                     ${day}
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${slots.length > 0 ? slots.map(slot => `
-                        <div class="bg-white dark:bg-darkCard p-5 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 flex items-center">
-                            <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mr-4">
-                                <i class="fa-solid fa-clock"></i>
+                        <div class="course-card !p-6 !h-auto !rounded-[2rem]">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary mr-4 border border-primary/10">
+                                    <i class="fa-solid fa-clock"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-black text-slate-800 dark:text-slate-100">${slot.course}</h4>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${slot.time}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="font-bold">${slot.course}</h4>
-                                <p class="text-xs text-gray-500">${slot.time} • ${slot.location}</p>
+                            <div class="flex items-center text-[10px] font-[900] text-primary/60 dark:text-blue-400/60 tracking-[0.2em] uppercase">
+                                <i class="fa-solid fa-location-dot mr-2 text-accent"></i>
+                                ${slot.location}
                             </div>
                         </div>
-                    `).join('') : '<p class="text-gray-400 text-sm ml-5">No lectures scheduled</p>'}
+                    `).join('') : `
+                        <div class="col-span-full py-8 px-8 glass rounded-[2rem] border-dashed border-2 border-slate-100 dark:border-white/5 flex items-center justify-center">
+                            <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">No lectures scheduled</p>
+                        </div>
+                    `}
                 </div>
             </div>
         `;
     }).join('');
 }
 
-// Chat Assistant Logic
-const GROQ_API_KEY = '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';
 
-async function getAIResponse(query) {
-    try {
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: "llama-3.1-70b-versatile",
-                messages: [
-                    { role: "system", content: "You are Readr AI, a helpful academic assistant for ECE students at UNIZIK. Use the provided course context to help students." },
-                    { role: "user", content: query }
-                ],
-                temperature: 0.7
-            })
-        });
-        const data = await response.json();
-        return data.choices[0].message.content;
-    } catch (e) {
-        console.error("AI Error:", e);
-        return "Sorry, I'm having trouble connecting to my brain. Please try again later.";
-    }
-}
-
-function loadChat() {
-    const messages = JSON.parse(localStorage.getItem('chat_history') || '[]');
-    const container = document.getElementById('chat-messages');
-
-    if (messages.length > 0) {
-        container.innerHTML = messages.map(msg => `
-            <div class="chat-bubble ${msg.role === 'user' ? 'user' : 'bot'}">
-                ${msg.text}
-            </div>
-        `).join('');
-    }
-
-    container.scrollTop = container.scrollHeight;
-}
-
-document.getElementById('chat-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    appendMessage('user', text);
-    input.value = '';
-
-    // Show typing indicator
-    const typingId = 'typing-' + Date.now();
-    const container = document.getElementById('chat-messages');
-    const typingDiv = document.createElement('div');
-    typingDiv.id = typingId;
-    typingDiv.className = 'chat-bubble bot italic text-gray-400';
-    typingDiv.innerText = 'Thinking...';
-    container.appendChild(typingDiv);
-    container.scrollTop = container.scrollHeight;
-
-    const response = await getAIResponse(text);
-
-    document.getElementById(typingId)?.remove();
-    appendMessage('bot', response);
-});
-
-function appendMessage(role, text) {
-    const container = document.getElementById('chat-messages');
-    const div = document.createElement('div');
-    div.className = `chat-bubble ${role}`;
-    div.innerText = text;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-
-    const history = JSON.parse(localStorage.getItem('chat_history') || '[]');
-    history.push({ role, text });
-    if (history.length > 50) history.shift(); // Keep history manageable
-    localStorage.setItem('chat_history', JSON.stringify(history));
-}
-
-function clearChat() {
-    if (confirm("Clear chat history?")) {
-        localStorage.removeItem('chat_history');
-        document.getElementById('chat-messages').innerHTML = `
-            <div class="chat-bubble bot">Hello! I'm your Readr Assistant. How can I help you with your studies today?</div>
-        `;
-    }
-}
 
 // Forum Logic
+function scrollToMessage(messageId) {
+    const element = document.getElementById(`msg-${messageId}`);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const bubble = element.querySelector('.message-bubble');
+        if (bubble) {
+            bubble.classList.add('highlight-message');
+            setTimeout(() => {
+                bubble.classList.remove('highlight-message');
+            }, 2000);
+        }
+    }
+}
+
 async function loadForum() {
     const container = document.getElementById('forum-messages');
 
@@ -313,16 +370,26 @@ async function loadForum() {
     }
 
     // Subscribe to real-time updates
-    supabaseClient.channel('public:forum_posts')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_posts' }, payload => {
+    if (window.forumSubscription) {
+        window.forumSubscription.unsubscribe();
+    }
+
+    window.forumSubscription = supabaseClient.channel('public:forum_messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_messages' }, payload => {
             appendForumMessage(payload.new, true);
         })
-        .subscribe();
+        .subscribe((status) => {
+            console.log("Supabase subscription status:", status);
+            if (status === 'CHANNEL_ERROR') {
+                console.error("Forum subscription error, retrying...");
+                setTimeout(loadForum, 5000);
+            }
+        });
 
     const { data: posts, error } = await supabaseClient
-        .from('forum_posts')
+        .from('forum_messages')
         .select('*')
-        .order('created_at', { ascending: true });
+        .order('timestamp', { ascending: true });
 
     if (error) {
         console.error("Error loading forum:", error);
@@ -339,19 +406,29 @@ async function loadForum() {
 
 function renderForumPost(post) {
     const user = JSON.parse(localStorage.getItem('readr_user'));
-    const isMe = user && post.username === user.name;
-    const time = post.created_at ? new Date(post.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now';
+    const isMe = user && post.uid && post.uid.toString() === user.id.toString();
+    const time = post.timestamp ? new Date(post.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now';
+    const senderName = post.sender || 'Anonymous';
+    const messageText = post.text || '';
+
     return `
-        <div class="flex space-x-4 ${isMe ? 'flex-row-reverse space-x-reverse' : ''}">
-            <div class="w-10 h-10 ${isMe ? 'bg-primary' : 'bg-gray-400'} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 uppercase">
-                ${(post.username || 'A')[0]}
+        <div id="msg-${post.id}" class="flex space-x-4 ${isMe ? 'flex-row-reverse space-x-reverse' : ''} group animate-premiumFade">
+            <div class="w-12 h-12 ${isMe ? 'bg-primary shadow-[0_10px_20px_rgba(0,74,173,0.2)]' : 'bg-slate-200 dark:bg-slate-700'} rounded-[1.2rem] flex items-center justify-center text-white font-black flex-shrink-0 uppercase text-lg border-2 border-white dark:border-slate-800">
+                ${senderName[0]}
             </div>
-            <div class="flex-1">
-                <div class="${isMe ? 'bg-primary/10 border-primary/20' : 'bg-gray-100 dark:bg-gray-800'} p-4 rounded-2xl ${isMe ? 'rounded-tr-none' : 'rounded-tl-none'} border">
-                    <p class="font-bold text-xs mb-1 ${isMe ? 'text-primary' : ''}">${post.username || 'Anonymous'}</p>
-                    <p class="text-sm">${post.message}</p>
+            <div class="max-w-[80%] md:max-w-[60%]">
+                <div class="message-bubble ${isMe ? 'bg-primary text-white shadow-[0_15px_30px_rgba(0,74,173,0.1)]' : 'bg-white dark:bg-slate-800 dark:text-slate-100 shadow-sm'} p-5 rounded-[2rem] ${isMe ? 'rounded-tr-none' : 'rounded-tl-none'} border border-slate-100 dark:border-white/5 relative">
+                    <p class="font-black text-[10px] uppercase tracking-widest mb-2 ${isMe ? 'text-white/60' : 'text-primary'}">${senderName}</p>
+                    ${post.reply_to_name ? `
+                        <div onclick="scrollToMessage('${post.reply_to_id}')" class="mb-3 p-2 bg-black/10 rounded-xl border-l-4 border-white/30 text-[11px] opacity-80 cursor-pointer hover:bg-black/20 transition-all">
+                            <p class="font-bold">${post.reply_to_name}</p>
+                            <p class="truncate">${post.reply_to_text || 'Attachment'}</p>
+                        </div>
+                    ` : ''}
+                    ${post.image_url ? `<img src="${post.image_url}" class="rounded-xl mb-3 max-h-60 w-full object-cover">` : ''}
+                    <p class="text-sm font-medium leading-relaxed">${messageText}</p>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-1 ${isMe ? 'text-right mr-2' : 'ml-2'}">${time}</p>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 ${isMe ? 'text-right mr-3' : 'ml-3'}">${time}</p>
             </div>
         </div>
     `;
@@ -364,12 +441,12 @@ async function sendForumMessage() {
     if (!text || !user) return;
 
     const { error } = await supabaseClient
-        .from('forum_posts')
+        .from('forum_messages')
         .insert([{
-            message: text,
-            username: user.name,
-            user_id: user.id,
-            created_at: new Date().toISOString()
+            text: text,
+            sender: user.name,
+            uid: user.id,
+            timestamp: new Date().toISOString()
         }]);
 
     if (error) {
@@ -383,7 +460,7 @@ function appendForumMessage(post, animate = false) {
     const container = document.getElementById('forum-messages');
     const div = document.createElement('div');
     div.innerHTML = renderForumPost(post);
-    container.appendChild(div);
+    container.appendChild(div.firstElementChild);
     container.scrollTop = container.scrollHeight;
 
     if (currentPage !== 'forum') {
@@ -406,6 +483,8 @@ async function toggleBookmark(path, title) {
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
     if (currentPage === 'bookmarks') renderBookmarks();
     updateBookmarkButton(path);
+
+    syncUserDataToSupabase();
 }
 
 function renderBookmarks() {
@@ -414,26 +493,26 @@ function renderBookmarks() {
 
     if (bookmarks.length === 0) {
         container.innerHTML = `
-            <div class="text-center py-20">
-                <i class="fa-solid fa-bookmark text-6xl text-gray-200 mb-4"></i>
-                <p class="text-gray-500">No saved materials yet.</p>
+            <div class="text-center py-24 glass rounded-[3rem]">
+                <i class="fa-solid fa-bookmark text-7xl text-slate-100 dark:text-slate-800 mb-6"></i>
+                <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No saved materials yet.</p>
             </div>
         `;
         return;
     }
 
     container.innerHTML = bookmarks.map(b => `
-        <div class="bg-white dark:bg-darkCard p-4 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <div class="course-card !flex-row items-center !p-5 !h-auto !mb-4 !rounded-[2rem]">
             <div class="flex items-center cursor-pointer flex-1" onclick="openPdf('${b.path}', '${b.title}', 'Saved')">
-                <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-primary mr-4">
-                    <i class="fa-solid fa-file-pdf"></i>
+                <div class="icon-wrapper !mb-0 mr-5 !w-12 !h-12 !rounded-2xl bg-accent/10 border border-accent/20">
+                    <i class="fa-solid fa-file-pdf text-primary"></i>
                 </div>
                 <div>
-                    <h5 class="font-bold text-sm">${b.title}</h5>
-                    <p class="text-[10px] text-gray-400">Saved on ${b.date}</p>
+                    <h5 class="font-[950] text-slate-800 dark:text-slate-100 truncate">${b.title}</h5>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Saved on ${b.date}</p>
                 </div>
             </div>
-            <button onclick="toggleBookmark('${b.path}', '${b.title}')" class="text-primary p-2">
+            <button onclick="toggleBookmark('${b.path}', '${b.title}')" class="w-10 h-10 rounded-full flex items-center justify-center text-primary hover:bg-primary/10 transition-all">
                 <i class="fa-solid fa-bookmark"></i>
             </button>
         </div>
@@ -481,22 +560,7 @@ function updateNavUI(pageId) {
 function renderCourseGrid() {
     const grid = document.getElementById('course-grid');
     const sem1 = COURSE_DATA.filter(c => c.semester === 1);
-    grid.innerHTML = sem1.map(course => `
-        <div class="course-card" onclick="viewMaterials('${course.title}')">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary dark:text-blue-400 mb-4">
-                <i class="${course.icon}"></i>
-            </div>
-            <h4 class="font-bold text-lg">${course.title}</h4>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-1">${course.subtitle}</p>
-            <div class="flex items-center text-[10px] font-bold text-gray-400 mb-4">
-                <i class="fa-solid fa-bookmark mr-1 text-accent"></i>
-                ${course.credits} CREDIT UNITS
-            </div>
-            <div class="mt-auto">
-                <button class="w-full py-2 bg-blue-50 dark:bg-blue-900/20 text-primary dark:text-blue-400 rounded-xl font-bold text-sm">View</button>
-            </div>
-        </div>
-    `).join('');
+    grid.innerHTML = sem1.map(course => renderCourseCard(course)).join('');
 }
 
 async function viewMaterials(courseTitle) {
@@ -510,7 +574,7 @@ async function viewMaterials(courseTitle) {
 
     // Lecture Materials Section
     if (course.pdfs && course.pdfs.length > 0) {
-        html += `<h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Lecture Materials</h3>`;
+        html += `<h3 class="text-[10px] font-[950] text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-6 px-2">Lecture Materials</h3>`;
         const pdfsHtml = await Promise.all(course.pdfs.map(async (pdf) => {
             const isCached = await isFileOffline(pdf.path);
             return renderMaterialItem(pdf, isCached, course.title);
@@ -520,7 +584,7 @@ async function viewMaterials(courseTitle) {
 
     // Past Questions Section
     if (course.pastQuestions && course.pastQuestions.length > 0) {
-        html += `<h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mt-8 mb-4">Past Questions</h3>`;
+        html += `<h3 class="text-[10px] font-[950] text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-10 mb-6 px-2">Past Questions</h3>`;
         const pqHtml = await Promise.all(course.pastQuestions.map(async (pq) => {
             const isCached = await isFileOffline(pq.path);
             return renderMaterialItem(pq, isCached, course.title, 'fa-solid fa-paste text-blue-500');
@@ -530,20 +594,22 @@ async function viewMaterials(courseTitle) {
 
     // Videos Section
     if (course.videos && course.videos.length > 0) {
-        html += `<h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mt-8 mb-4">Video Lessons</h3>`;
+        html += `<h3 class="text-[10px] font-[950] text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-10 mb-6 px-2">Video Lessons</h3>`;
         const videosHtml = course.videos.map(video => `
-            <div class="bg-white dark:bg-darkCard p-4 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center cursor-pointer hover:border-primary transition-colors mb-4" onclick="openVideoPlayer('${video.url}', '${video.title}')">
-                <div class="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden mr-4 relative">
-                    <img src="${video.thumbnail}" class="w-full h-full object-cover opacity-80">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <i class="fa-solid fa-play text-white text-xs"></i>
+            <div class="course-card !flex-row items-center !p-4 !h-auto !mb-4 !rounded-[2rem]" onclick="openVideoPlayer('${video.url}', '${video.title}')">
+                <div class="w-20 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden mr-5 relative flex-shrink-0">
+                    <img src="${video.thumbnail}" class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute inset-0 flex items-center justify-center bg-primary/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-play text-white text-sm"></i>
                     </div>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h5 class="font-bold truncate">${video.title}</h5>
-                    <span class="text-[10px] text-gray-400 font-bold">In-app player</span>
+                    <h5 class="font-black text-slate-800 dark:text-slate-100 truncate">${video.title}</h5>
+                    <span class="text-[9px] text-primary dark:text-blue-400 font-black uppercase tracking-widest">In-app player</span>
                 </div>
-                <i class="fa-solid fa-play text-primary text-xs"></i>
+                <div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                    <i class="fa-solid fa-play text-xs"></i>
+                </div>
             </div>
         `);
         html += videosHtml.join('');
@@ -562,20 +628,22 @@ function renderMaterialItem(item, isCached, courseTitle, iconClass = 'fa-solid f
     if (isImage) iconClass = 'fa-solid fa-image text-green-500';
 
     return `
-        <div class="bg-white dark:bg-darkCard p-4 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center cursor-pointer hover:border-primary transition-colors mb-4" onclick="openPdf('${item.path}', '${item.title}', '${courseTitle}')">
-            <div class="w-12 h-12 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mr-4">
+        <div class="course-card !flex-row items-center !p-5 !h-auto !mb-4 !rounded-[2rem]" onclick="openPdf('${item.path}', '${item.title}', '${courseTitle}')">
+            <div class="icon-wrapper !mb-0 mr-5 !w-12 !h-12 !rounded-2xl bg-slate-50 dark:bg-slate-800/50">
                 <i class="${iconClass} text-xl"></i>
             </div>
             <div class="flex-1 min-w-0">
-                <h5 class="font-bold truncate">${item.title}</h5>
+                <h5 class="font-black text-slate-800 dark:text-slate-100 truncate">${item.title}</h5>
                 <div class="flex items-center mt-1">
                     ${isCached ?
-                        `<span class="text-[10px] text-green-500 font-bold flex items-center"><i class="fa-solid fa-circle-check mr-1"></i> Available Offline</span>` :
-                        `<span class="text-[10px] text-gray-400 font-bold">Tap to ${isImage ? 'view' : 'open'}</span>`
+                        `<span class="text-[9px] text-green-500 font-black uppercase tracking-widest flex items-center"><i class="fa-solid fa-circle-check mr-1.5"></i> Offline Ready</span>` :
+                        `<span class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Tap to ${isImage ? 'view' : 'open'}</span>`
                     }
                 </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-gray-300 text-sm"></i>
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-slate-300">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </div>
         </div>
     `;
 }
@@ -673,6 +741,8 @@ function saveActivity(title, subtitle, path) {
     const activity = { title, subtitle, path, timestamp: Date.now() };
     localStorage.setItem('recent_activity', JSON.stringify(activity));
     loadRecentActivity();
+
+    syncUserDataToSupabase();
 }
 
 function loadRecentActivity() {
@@ -801,110 +871,7 @@ function startManualSync() {
     syncService.syncAllMaterials();
 }
 
-// Alarms Logic
-function renderAlarms() {
-    const alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
-    const container = document.getElementById('alarms-list');
 
-    if (alarms.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-20">
-                <i class="fa-solid fa-clock text-6xl text-gray-200 mb-4"></i>
-                <p class="text-gray-500">No alarms set.</p>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = alarms.map((alarm, index) => `
-        <div class="bg-white dark:bg-darkCard p-6 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between">
-            <div class="flex items-center">
-                <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mr-5">
-                    <i class="fa-solid fa-bell text-2xl"></i>
-                </div>
-                <div>
-                    <h4 class="text-2xl font-black">${alarm.time}</h4>
-                    <p class="text-sm text-gray-500">${alarm.label}</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" ${alarm.enabled ? 'checked' : ''} onchange="toggleAlarm(${index})" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                </label>
-                <button onclick="deleteAlarm(${index})" class="text-red-500 p-2"><i class="fa-solid fa-trash"></i></button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function showAddAlarmModal() {
-    document.getElementById('alarm-modal').classList.remove('hidden');
-}
-
-function hideAddAlarmModal() {
-    document.getElementById('alarm-modal').classList.add('hidden');
-}
-
-document.getElementById('alarm-form')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const label = document.getElementById('alarm-label').value;
-    const time = document.getElementById('alarm-time').value;
-
-    const alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
-    alarms.push({ label, time, enabled: true });
-    localStorage.setItem('alarms', JSON.stringify(alarms));
-
-    if ("Notification" in window) {
-        Notification.requestPermission();
-    }
-
-    hideAddAlarmModal();
-    renderAlarms();
-});
-
-function toggleAlarm(index) {
-    const alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
-    alarms[index].enabled = !alarms[index].enabled;
-    localStorage.setItem('alarms', JSON.stringify(alarms));
-}
-
-function deleteAlarm(index) {
-    if (confirm("Delete this alarm?")) {
-        const alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
-        alarms.splice(index, 1);
-        localStorage.setItem('alarms', JSON.stringify(alarms));
-        renderAlarms();
-    }
-}
-
-// Background alarm checker
-setInterval(() => {
-    const alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
-    const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-    alarms.forEach(alarm => {
-        if (alarm.enabled && alarm.time === currentTime && now.getSeconds() === 0) {
-            playAlarm(alarm);
-        }
-    });
-}, 1000);
-
-function playAlarm(alarm) {
-    if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("Study Time!", {
-            body: `It's time for: ${alarm.label}`,
-            icon: "../assets/logo.png"
-        });
-    }
-
-    // Play sound if possible
-    const audio = new Audio('https://hcqaseovlciadogewnsw.supabase.co/storage/v1/object/public/materials/assets/notification_sound.mp3');
-    audio.play().catch(e => console.log("Audio play blocked"));
-
-    alert(`ALARM: ${alarm.label}`);
-}
 
 // Assignments Logic
 function renderAssignments() {
@@ -979,15 +946,16 @@ function toggleMobileMenu() {
     const content = document.getElementById('drawer-content');
     drawer.classList.toggle('opacity-0');
     drawer.classList.toggle('pointer-events-none');
-    content.classList.toggle('translate-x-[-100%]');
+    content.classList.toggle('translate-x-[-120%]');
 }
 
 function hideMobileMenu() {
     const drawer = document.getElementById('mobile-drawer');
     const content = document.getElementById('drawer-content');
+    if (!drawer || !content) return;
     drawer.classList.add('opacity-0');
     drawer.classList.add('pointer-events-none');
-    content.classList.add('translate-x-[-100%]');
+    content.classList.add('translate-x-[-120%]');
 }
 
 // Storage Management
@@ -1045,6 +1013,18 @@ function toggleLockIn() {
             window.screenLock.release();
             window.screenLock = null;
         }
+    }
+}
+
+function togglePasswordVisibility() {
+    const input = document.getElementById('login-password');
+    const icon = document.getElementById('password-toggle-icon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye text-sm';
+    } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye-slash text-sm';
     }
 }
 

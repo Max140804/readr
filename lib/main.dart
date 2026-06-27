@@ -14,6 +14,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'services/sync_service.dart';
 
 void main() async {
   runZonedGuarded(() async {
@@ -91,6 +92,12 @@ class MyAppState extends State<MyApp> {
   Future<void> _loadTheme() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      
+      // Initial cloud pull if logged in
+      if (Supabase.instance.client.auth.currentUser != null) {
+        await SyncService().pullFromCloud();
+      }
+
       if (mounted) {
         setState(() {
           _themeMode = ThemeMode.values[prefs.getInt('themeMode') ?? 0];
@@ -103,6 +110,8 @@ class MyAppState extends State<MyApp> {
     setState(() => _themeMode = mode);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('themeMode', mode.index);
+    // Sync theme change to cloud
+    SyncService().pushToCloud();
   }
 
   ThemeMode get themeMode => _themeMode;
