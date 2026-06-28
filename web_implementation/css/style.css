@@ -152,30 +152,6 @@ body {
 }
 
 /* --- Mobile Nav --- */
-nav.md\:hidden.fixed.bottom-0 {
-    position: fixed;
-    bottom: 1.5rem !important;
-    left: 1.5rem !important;
-    right: 1.5rem !important;
-    height: 5rem;
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border-radius: 2.5rem;
-    border: 1px solid rgba(255,255,255,0.4);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 100;
-    padding: 0 1rem;
-}
-
-.dark nav.md\:hidden.fixed.bottom-0 {
-    background-color: rgba(15, 23, 42, 0.85);
-    border-color: rgba(255, 255, 255, 0.05);
-}
-
 .mobile-nav-item {
     display: flex;
     flex-direction: column;
@@ -451,7 +427,7 @@ body.lock-in-mode .glass {
 /* Responsive Forum Adjustments */
 @media (max-width: 768px) {
     #page-forum {
-        height: calc(100vh - 180px); /* Account for mobile header and bottom nav */
+        height: calc(100vh - 80px); /* Account for mobile header only */
         margin-top: 0;
         padding: 0.5rem !important;
     }
