@@ -341,12 +341,24 @@
 
     </main>
 
-    <!-- Mobile Navigation Bar (Removed in favor of Drawer) -->
-    <!--
+    <!-- Mobile Navigation Bar -->
     <nav class="md:hidden fixed bottom-8 left-8 right-8 h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/40 dark:border-white/10 rounded-[2.5rem] shadow-[0_25px_60px_rgba(0,0,0,0.15)] px-4 flex justify-around items-center z-[130] transition-all duration-500">
-        ...
+        <button onclick="showPage('home')" class="mobile-nav-item active">
+            <i class="fa-solid fa-house"></i>
+        </button>
+        <button onclick="showPage('courses')" class="mobile-nav-item">
+            <i class="fa-solid fa-book"></i>
+        </button>
+        <button onclick="showPage('timetable')" class="mobile-nav-item">
+            <i class="fa-solid fa-calendar-days"></i>
+        </button>
+        <button onclick="showPage('forum')" class="mobile-nav-item">
+            <i class="fa-solid fa-users"></i>
+        </button>
+        <button onclick="showPage('bookmarks')" class="mobile-nav-item">
+            <i class="fa-solid fa-bookmark"></i>
+        </button>
     </nav>
-    -->
 
     <!-- Mobile Menu / Drawer overlay -->
     <div id="mobile-drawer" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[120] opacity-0 pointer-events-none transition-all duration-500">

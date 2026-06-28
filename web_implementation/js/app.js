@@ -695,6 +695,21 @@ function closePdf() {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
     iframe.src = '';
+
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    }
+}
+
+function togglePdfFullscreen() {
+    const modal = document.getElementById('pdf-modal');
+    if (!document.fullscreenElement) {
+        modal.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
 }
 
 // Video Player
