@@ -487,4 +487,51 @@ body.lock-in-mode .glass {
 /* --- RESPONSIVE --- */
 @media (max-width: 768px) {
     main { margin-left: 0 !important; padding-bottom: 2rem !important; }
+
+    .page-container {
+        padding: 1.5rem 1.25rem;
+    }
+
+    h1 { font-size: 2.5rem !important; }
+    #user-name { font-size: 2.75rem !important; }
+
+    .hero-gradient {
+        padding: 1.5rem !important;
+        border-radius: 2rem;
+    }
+
+    .hero-gradient h2 {
+        font-size: 2.25rem !important;
+    }
+
+    .course-card {
+        padding: 1.25rem;
+        border-radius: 1.75rem;
+    }
+
+    .icon-wrapper {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .icon-wrapper i {
+        font-size: 1.25rem;
+    }
+
+    .glass {
+        border-radius: 2rem !important;
+    }
+
+    /* Adjust Discovery cards */
+    .course-card.\!flex-row {
+        padding: 1rem !important;
+    }
+
+    .course-card.\!flex-row .icon-wrapper {
+        width: 2.75rem !important;
+        height: 2.75rem !important;
+        margin-right: 1rem !important;
+    }
 }
