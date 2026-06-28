@@ -9,7 +9,7 @@ const COURSE_DATA = [
     {
         "title": "ECE 505",
         "subtitle": "COMPUTER AIDED DESIGN",
-        "icon": "fa-solid fa-architecture",
+        "icon": "fa-solid fa-computer",
         "credits": 3,
         "semester": 1,
         "pdfs": [
