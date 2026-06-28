@@ -376,8 +376,7 @@ body.lock-in-mode .glass {
     background-color: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    padding: 1.25rem 2rem;
+    padding: 1rem 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -386,7 +385,6 @@ body.lock-in-mode .glass {
 
 .dark .glass-header {
     background-color: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 #pdf-iframe {
@@ -394,12 +392,10 @@ body.lock-in-mode .glass {
     background-color: #fff;
     width: 100%;
     height: 100%;
-    border-radius: 2rem;
 }
 
 .dark #pdf-iframe {
     background-color: #1e1e1e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 768px) {
@@ -412,11 +408,11 @@ body.lock-in-mode .glass {
     }
 
     #pdf-modal .flex-1 {
-        padding: 0.75rem !important;
+        padding: 0 !important;
     }
 
     #pdf-iframe {
-        border-radius: 1rem !important;
+        border-radius: 0 !important;
     }
 }
 
