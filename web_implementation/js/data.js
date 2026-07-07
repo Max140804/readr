@@ -60,6 +60,16 @@ const COURSE_DATA = [
         ]
     },
     {
+        "title": "ECE 519",
+        "subtitle": "SEMINAR",
+        "icon": "fa-solid fa-person-chalkboard",
+        "credits": 1,
+        "semester": 1,
+        "pdfs": [],
+        "videos": [],
+        "pastQuestions": []
+    },
+    {
         "title": "ECE 527",
         "subtitle": "SOLID STATE ELECTRONICS",
         "icon": "fa-solid fa-bolt",
@@ -89,6 +99,26 @@ const COURSE_DATA = [
         ]
     },
     {
+        "title": "ECE 529",
+        "subtitle": "SYSTEM PROGRAMMING",
+        "icon": "fa-solid fa-terminal",
+        "credits": 3,
+        "semester": 1,
+        "pdfs": [],
+        "videos": [],
+        "pastQuestions": []
+    },
+    {
+        "title": "ECE 531",
+        "subtitle": "WIRELESS COMMUNICATION & NETWORK APPLICATIONS",
+        "icon": "fa-solid fa-wifi",
+        "credits": 3,
+        "semester": 1,
+        "pdfs": [],
+        "videos": [],
+        "pastQuestions": []
+    },
+    {
         "title": "ECE 537",
         "subtitle": "DIGITAL SIGNAL PROCESSING",
         "icon": "fa-solid fa-wave-square",
@@ -111,6 +141,46 @@ const COURSE_DATA = [
             {"title": "Digital Filter Design: FIR vs IIR", "thumbnail": "https://img.youtube.com/vi/1_8-V6_D6Yk/0.jpg", "url": "https://youtu.be/1_8-V6_D6Yk"},
             {"title": "Nyquist-Shannon Sampling Theorem", "thumbnail": "https://img.youtube.com/vi/FcXZ27L0m60/0.jpg", "url": "https://youtu.be/FcXZ27L0m60"}
         ],
+        "pastQuestions": []
+    },
+    {
+        "title": "ECE 539",
+        "subtitle": "COMPUTER ARCHITECTURE & ARCHITECTURE",
+        "icon": "fa-solid fa-microchip",
+        "credits": 3,
+        "semester": 1,
+        "pdfs": [],
+        "videos": [],
+        "pastQuestions": []
+    },
+    {
+        "title": "ECE 541",
+        "subtitle": "ARTIFICIAL INTELLIGENCE & ROBOTICS",
+        "icon": "fa-solid fa-robot",
+        "credits": 3,
+        "semester": 1,
+        "pdfs": [],
+        "videos": [],
+        "pastQuestions": []
+    },
+    {
+        "title": "ECE 518",
+        "subtitle": "PROJECT",
+        "icon": "fa-solid fa-diagram-project",
+        "credits": 6,
+        "semester": 2,
+        "pdfs": [],
+        "videos": [],
+        "pastQuestions": []
+    },
+    {
+        "title": "ECE 538",
+        "subtitle": "DATA COMMUNICATION NETWORK",
+        "icon": "fa-solid fa-network-wired",
+        "credits": 3,
+        "semester": 2,
+        "pdfs": [],
+        "videos": [],
         "pastQuestions": []
     },
     {
@@ -140,7 +210,26 @@ const COURSE_DATA = [
             {"title": "PQ 17-18 B", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/ECE_542_17-18_B.jpg")}
         ]
     },
-    // Other courses simplified for space, following same pattern...
+    {
+        "title": "ECE 554",
+        "subtitle": "SOFTWARE ENGINEERING",
+        "icon": "fa-solid fa-code",
+        "credits": 3,
+        "semester": 2,
+        "pdfs": [],
+        "videos": [],
+        "pastQuestions": []
+    },
+    {
+        "title": "ELE 504",
+        "subtitle": "NETWORK ANALYSIS & SYNTHESIS",
+        "icon": "fa-solid fa-chart-line",
+        "credits": 3,
+        "semester": 2,
+        "pdfs": [],
+        "videos": [],
+        "pastQuestions": []
+    },
     {
         "title": "ELE 574",
         "subtitle": "CONTROL SYSTEM ENGINEERING",
@@ -251,7 +340,7 @@ const STUDENT_DATA = [
     {"regNumber": "2022364065", "surname": "OKATTA", "firstName": "EKENEDILICHUKWU"},
     {"regNumber": "2022364066", "surname": "UCHE", "firstName": "AMARACHUKWU"},
     {"regNumber": "2022364067", "surname": "OLAJIDE", "firstName": "AKINREFON"},
-    {"regNumber": "2022364068", "surname": "CHINWENDU", "firstName": "CHIGOZIE"},
+    {"regNumber": "2022364068", "surname": "CHIGOZIE", "firstName": "CHINWENDU"},
     {"regNumber": "2022364069", "surname": "WAMUO", "firstName": "CHIEME"},
     {"regNumber": "2022364070", "surname": "ONYEJEKWE", "firstName": "CHIMAOBI"},
     {"regNumber": "2022364071", "surname": "ANIAGOLU", "firstName": "BRENDAN"},
