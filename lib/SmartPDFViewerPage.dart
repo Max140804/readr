@@ -52,6 +52,7 @@ class _SmartPDFViewerPageState extends State<SmartPDFViewerPage> with SingleTick
     return path.endsWith('.jpg') || 
            path.endsWith('.jpeg') || 
            path.endsWith('.png') || 
+           path.endsWith('.gif') ||
            path.endsWith('.webp');
   }
 

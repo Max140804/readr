@@ -448,8 +448,8 @@ class _PDFListPageState extends State<PDFListPage> {
                                   // Save to recent activity
                                   await ActivityService().trackActivity(
                                     title: item["title"],
-                                    subtitle: "Continue reading from ${widget.courseName}",
-                                    type: 'pdf',
+                                    subtitle: isImage ? "Viewed image in ${widget.courseName}" : "Continue reading from ${widget.courseName}",
+                                    type: isImage ? 'image' : 'pdf',
                                     path: item["path"],
                                     course: widget.courseName,
                                   );

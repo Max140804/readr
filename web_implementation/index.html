@@ -347,10 +347,10 @@
             <div class="glass-header !bg-transparent !border-none py-4 px-6">
                 <div class="flex items-center">
                     <div class="w-10 h-10 flex items-center justify-center mr-4">
-                        <i class="fa-solid fa-file-pdf text-red-500 text-2xl"></i>
+                        <i id="material-viewer-icon" class="fa-solid fa-file-pdf text-red-500 text-2xl"></i>
                     </div>
                     <div>
-                        <h2 id="pdf-viewer-title" class="text-lg font-black truncate max-w-[200px] md:max-w-md text-slate-900 dark:text-white">Viewing PDF</h2>
+                        <h2 id="pdf-viewer-title" class="text-lg font-black truncate max-w-[200px] md:max-w-md text-slate-900 dark:text-white">Viewing Material</h2>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -370,6 +370,9 @@
                     <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 </div>
                 <iframe id="pdf-iframe" class="w-full h-full border-none bg-white" src=""></iframe>
+                <div id="image-viewer-container" class="w-full h-full hidden overflow-auto flex items-center justify-center bg-gray-100 dark:bg-slate-800 p-4">
+                    <img id="viewer-image" src="" class="max-w-full max-h-full object-contain shadow-2xl rounded-lg">
+                </div>
             </div>
         </div>
 

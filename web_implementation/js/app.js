@@ -703,13 +703,28 @@ function renderMaterialItem(item, isCached, courseTitle, iconClass = 'fa-solid f
 async function openPdf(path, title, courseName) {
     const modal = document.getElementById('pdf-modal');
     const iframe = document.getElementById('pdf-iframe');
+    const imageContainer = document.getElementById('image-viewer-container');
+    const viewerImage = document.getElementById('viewer-image');
     const loader = document.getElementById('pdf-loader');
+    const iconEl = document.getElementById('material-viewer-icon');
+
+    const isImage = path.match(/\.(jpg|jpeg|png|webp|gif)$/i);
 
     currentPdf = { path, title };
     document.getElementById('pdf-viewer-title').innerText = title;
     modal.classList.remove('hidden');
     modal.classList.add('flex');
     loader.classList.remove('hidden');
+
+    if (isImage) {
+        iframe.classList.add('hidden');
+        imageContainer.classList.remove('hidden');
+        iconEl.className = 'fa-solid fa-image text-green-500 text-2xl';
+    } else {
+        iframe.classList.remove('hidden');
+        imageContainer.classList.add('hidden');
+        iconEl.className = 'fa-solid fa-file-pdf text-red-500 text-2xl';
+    }
 
     updateBookmarkButton(path);
     saveActivity(title, `Reading in ${courseName}`, path);
@@ -728,31 +743,42 @@ async function openPdf(path, title, courseName) {
                 .catch(err => console.warn("Background cache failed:", err));
         }
 
-        // Mobile browsers (especially iOS) hate PDFs in iframes.
-        // We use a Google Docs viewer fallback for better compatibility if not offline
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        if (isMobile && !offlineFile) {
-            // Use Google PDF viewer for mobile web to ensure it opens
-            iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+        if (isImage) {
+            viewerImage.src = url;
+            loader.classList.add('hidden');
         } else {
-            iframe.src = url;
+            // Mobile browsers (especially iOS) hate PDFs in iframes.
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile && !offlineFile && !path.startsWith('blob:')) {
+                // Use Google PDF viewer for mobile web to ensure it opens
+                iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+            } else {
+                iframe.src = url;
+            }
         }
 
     } catch (e) {
-        console.error("PDF Load Error:", e);
-        iframe.src = path;
+        console.error("Material Load Error:", e);
+        if (isImage) {
+            viewerImage.src = path;
+        } else {
+            iframe.src = path;
+        }
     }
 
-    iframe.onload = () => loader.classList.add('hidden');
+    if (!isImage) {
+        iframe.onload = () => loader.classList.add('hidden');
+    }
 }
 
 function closePdf() {
     const modal = document.getElementById('pdf-modal');
     const iframe = document.getElementById('pdf-iframe');
+    const viewerImage = document.getElementById('viewer-image');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
     iframe.src = '';
+    viewerImage.src = '';
 
     if (document.fullscreenElement) {
         document.exitFullscreen();
