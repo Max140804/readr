@@ -399,7 +399,7 @@ class _PDFListPageState extends State<PDFListPage> {
                                   listenable: MaterialSyncService(),
                                   builder: (context, _) {
                                     final syncService = MaterialSyncService();
-                                    final isCached = _cachedPaths.contains(path);
+                                    final isCached = syncService.isCached(path);
                                     
                                     if (isCached) {
                                       return Row(

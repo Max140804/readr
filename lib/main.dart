@@ -36,7 +36,9 @@ void main() async {
     await initializeBackgroundService();
     UpdateService.listenForUpdates();
     ConnectivityService().init();
-    MaterialSyncService().syncAllMaterials(); // Start background sync
+    final syncService = MaterialSyncService();
+    await syncService.init();
+    syncService.syncAllMaterials(); // Start background sync
 
     // Request ignore battery optimizations on Android
     if (Platform.isAndroid) {

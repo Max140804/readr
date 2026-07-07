@@ -91,9 +91,10 @@ class _SmartPDFViewerPageState extends State<SmartPDFViewerPage> with SingleTick
 
   Future<void> _checkFile() async {
     if (widget.assetPath.startsWith('http')) {
-      // Check if we have a cached version
-      final cachedFile = await _getCachedFile(widget.assetPath);
-      if (await cachedFile.exists()) {
+      final syncService = MaterialSyncService();
+      final cachedFile = syncService.getCachedFile(widget.assetPath);
+      
+      if (cachedFile != null) {
         if (mounted) {
           setState(() {
             _localCachedPath = cachedFile.path;

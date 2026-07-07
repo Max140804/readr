@@ -28,7 +28,7 @@ class MaterialSyncService extends ChangeNotifier {
   int get totalFiles => _totalFiles;
   int get downloadedFiles => _downloadedFiles;
 
-  String _getFileName(String url) {
+  static String getFileName(String url) {
     try {
       final uri = Uri.parse(url);
       final decodedPath = Uri.decodeFull(uri.path);
@@ -41,8 +41,30 @@ class MaterialSyncService extends ChangeNotifier {
     }
   }
 
+  String? _documentsPath;
+  List<String> _cachedUrls = [];
+
+  bool isCached(String url) => _cachedUrls.contains(url);
+
+  Future<void> init() async {
+    final directory = await getApplicationDocumentsDirectory();
+    _documentsPath = directory.path;
+    final prefs = await SharedPreferences.getInstance();
+    _cachedUrls = prefs.getStringList('cached_pdfs') ?? [];
+    notifyListeners();
+  }
+
+  File? getCachedFile(String url) {
+    if (_documentsPath == null || !isCached(url)) return null;
+    final fileName = getFileName(url);
+    final file = File('$_documentsPath/$fileName');
+    return file.existsSync() ? file : null;
+  }
+
   Future<void> syncAllMaterials() async {
     if (_isSyncing) return;
+    
+    if (_documentsPath == null) await init();
     
     // Check connectivity first
     if (!ConnectivityService().isConnected) {
@@ -78,26 +100,22 @@ class MaterialSyncService extends ChangeNotifier {
         }
       }
 
-      // De-duplicate URLs
-      allUrls = allUrls.toSet().toList();
       _totalFiles = allUrls.length;
       _downloadedFiles = 0;
       _syncProgress = 0.0;
       notifyListeners();
 
-      final directory = await getApplicationDocumentsDirectory();
-      List<String> cachedUrls = prefs.getStringList('cached_pdfs') ?? [];
       bool changed = false;
 
       for (String url in allUrls) {
         if (!_isSyncing) break; // Allow cancellation if we add it later
-        final fileName = _getFileName(url);
-        final file = File('${directory.path}/$fileName');
+        final fileName = getFileName(url);
+        final file = File('$_documentsPath/$fileName');
 
         if (await file.exists()) {
           _downloadedFiles++;
-          if (!cachedUrls.contains(url)) {
-            cachedUrls.add(url);
+          if (!_cachedUrls.contains(url)) {
+            _cachedUrls.add(url);
             changed = true;
           }
         } else {
@@ -106,8 +124,8 @@ class MaterialSyncService extends ChangeNotifier {
             if (response.statusCode == 200) {
               await file.writeAsBytes(response.bodyBytes);
               _downloadedFiles++;
-              if (!cachedUrls.contains(url)) {
-                cachedUrls.add(url);
+              if (!_cachedUrls.contains(url)) {
+                _cachedUrls.add(url);
                 changed = true;
               }
               debugPrint("Synced: $fileName");
@@ -120,7 +138,7 @@ class MaterialSyncService extends ChangeNotifier {
         _syncProgress = _totalFiles > 0 ? _downloadedFiles / _totalFiles : 1.0;
         notifyListeners();
         if (changed) {
-          await prefs.setStringList('cached_pdfs', cachedUrls);
+          await prefs.setStringList('cached_pdfs', _cachedUrls);
           changed = false;
         }
       }
@@ -137,12 +155,11 @@ class MaterialSyncService extends ChangeNotifier {
 
   Future<void> clearCache() async {
     final prefs = await SharedPreferences.getInstance();
-    final directory = await getApplicationDocumentsDirectory();
-    final cachedUrls = prefs.getStringList('cached_pdfs') ?? [];
+    if (_documentsPath == null) await init();
 
-    for (String url in cachedUrls) {
-      final fileName = _getFileName(url);
-      final file = File('${directory.path}/$fileName');
+    for (String url in _cachedUrls) {
+      final fileName = getFileName(url);
+      final file = File('$_documentsPath/$fileName');
       if (await file.exists()) {
         try {
           await file.delete();
@@ -153,6 +170,7 @@ class MaterialSyncService extends ChangeNotifier {
     }
 
     await prefs.remove('cached_pdfs');
+    _cachedUrls = [];
     await prefs.remove('initial_sync_complete');
     _downloadedFiles = 0;
     _syncProgress = 0.0;

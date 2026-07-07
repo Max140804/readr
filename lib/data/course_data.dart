@@ -21,8 +21,11 @@ class CourseData {
         "pdfs": [
           {"title": "Introduction to CAD Tool", "path": getPath("assets/1st Semester/ECE505/ECE 505 INTRODUCTION TO CAD TOOL.pdf"), "topic": "General"},
           {"title": "Transient Analysis", "path": getPath("assets/1st Semester/ECE505/transient analysis .pdf"), "topic": "Circuit Analysis"},
+          {"title": "RC Circuit - Matlab", "path": getPath("assets/1st Semester/ECE505/RC circuit - Transient analysis with Matlab.pdf"), "topic": "Circuit Analysis"},
           {"title": "Step Response of RLC", "path": getPath("assets/1st Semester/ECE505/Step Response of an RLC Circuit.pdf"), "topic": "Circuit Analysis"},
           {"title": "Math Modeling", "path": getPath("assets/1st Semester/ECE505/Mathematical-Modeling-of-Mechanical-and-Electrical-Systems.pdf"), "topic": "Modeling"},
+          {"title": "Electronics using Matlab", "path": getPath("assets/1st Semester/ECE505/Matlab - Electronics and Circuit Analysis using Matlab.pdf"), "topic": "Circuit Analysis"},
+          {"title": "Electric Circuits (5th Ed)", "path": getPath("assets/1st Semester/ECE505/Fundamentals_Of_Electric_Circuits-5th-Edition.PDF"), "topic": "Textbook"},
         ],
         "videos": [
           {"title": "Introduction to Computer Aided Design", "thumbnail": "https://img.youtube.com/vi/mFasqK_t9k8/0.jpg", "url": "https://youtu.be/mFasqK_t9k8"},
@@ -32,7 +35,9 @@ class CourseData {
           {"title": "Matlab for Circuit Analysis", "thumbnail": "https://img.youtube.com/vi/kCAsGg_uU6Y/0.jpg", "url": "https://youtu.be/kCAsGg_uU6Y"},
           {"title": "RLC Circuit State Space Modeling", "thumbnail": "https://img.youtube.com/vi/6_NoxP_n0r0/0.jpg", "url": "https://youtu.be/6_NoxP_n0r0"},
         ],
-        "pastQuestions": [{"title": "505 Past Question", "path": getPath("assets/1st Semester/ECE505/505 past question.pdf")}],
+        "pastQuestions": [
+          {"title": "505 Past Question", "path": getPath("assets/1st Semester/ECE505/505 past question.pdf")},
+        ],
         "assignments": <Assignment>[],
       },
       {
@@ -46,6 +51,9 @@ class CourseData {
           {"title": "Real Time Computing Intro", "path": getPath("assets/1st Semester/ECE517/Real time computing and programming - intro.pdf"), "topic": "Introduction"},
           {"title": "Sensors and Actuators", "path": getPath("assets/1st Semester/ECE517/Real Time computing and programming - sensors.pdf"), "topic": "Sensors"},
           {"title": "Microcontrollers", "path": getPath("assets/1st Semester/ECE517/Real Time computing and programming - microcontrollers.pdf"), "topic": "Microcontrollers"},
+          {"title": "Assembly Language", "path": getPath("assets/1st Semester/ECE517/Assembly_Language Textbook.pdf"), "topic": "Programming"},
+          {"title": "Dr. Tony's Material", "path": getPath("assets/1st Semester/ECE517/Dr_Tony_s_material.pdf"), "topic": "General"},
+          {"title": "Simon's Note", "path": getPath("assets/1st Semester/ECE517/ECE517 (Simon_s note).pdf"), "topic": "General"},
         ],
         "videos": [
           {"title": "Introduction to Real-Time Systems", "thumbnail": "https://img.youtube.com/vi/7p7M_7X-6Is/0.jpg", "url": "https://youtu.be/7p7M_7X-6Is"},
@@ -55,7 +63,10 @@ class CourseData {
           {"title": "Assembly Language Programming", "thumbnail": "https://img.youtube.com/vi/w9KCH_W9Trc/0.jpg", "url": "https://youtu.be/w9KCH_W9Trc"},
           {"title": "Interrupts and Timers", "thumbnail": "https://img.youtube.com/vi/uV9E8p_Gv_k/0.jpg", "url": "https://youtu.be/uV9E8p_Gv_k"},
         ],
-        "pastQuestions": [{"title": "517 Past Question", "path": getPath("assets/1st Semester/ECE517/517 past question.pdf")}],
+        "pastQuestions": [
+          {"title": "517 Past Question", "path": getPath("assets/1st Semester/ECE517/517 past question.pdf")},
+          {"title": "PQ 17-18", "path": getPath("assets/1st Semester/ECE517/pqECE_517_17-18.jpg")},
+        ],
         "assignments": <Assignment>[],
       },
       {
@@ -79,8 +90,12 @@ class CourseData {
         "semester": 1,
         "pdfs": [
           {"title": "Semiconductor Fabrication", "path": getPath("assets/1st Semester/ECE527/ECE 527 LECTURE 2 semiconductor fibrication process [Compatibility Mode].pdf"), "topic": "Fabrication"},
+          {"title": "BJT Fabrication", "path": getPath("assets/1st Semester/ECE527/ECE 527 LECTURES  3 BJT fibrication [Compatibility Mode].pdf"), "topic": "Fabrication"},
           {"title": "MOSFET Fabrication", "path": getPath("assets/1st Semester/ECE527/ECE 527 LECTURES  4 MOSFET  fibrication.ppt.pptx"), "topic": "Fabrication"},
+          {"title": "IC Processes", "path": getPath("assets/1st Semester/ECE527/Basic Integrated Circuit Processes.pdf"), "topic": "Fabrication"},
           {"title": "SRAM and DRAM", "path": getPath("assets/1st Semester/ECE527/ECE_527_SRAM_and_DRAM_handout.pdf"), "topic": "Memory"},
+          {"title": "Thyristor Handout", "path": getPath("assets/1st Semester/ECE527/Thyristor_handout.pdf"), "topic": "General"},
+          {"title": "SSE Lecture Note", "path": getPath("assets/1st Semester/ECE527/Solid State Electronics Lecture Note(1).pdf"), "topic": "General"},
         ],
         "videos": [
           {"title": "Semiconductor Fabrication Process", "thumbnail": "https://img.youtube.com/vi/FmP9X-pM_lI/0.jpg", "url": "https://youtu.be/FmP9X-pM_lI"},
@@ -90,7 +105,11 @@ class CourseData {
           {"title": "SRAM vs DRAM: Operation", "thumbnail": "https://img.youtube.com/vi/fUfR_C96uCc/0.jpg", "url": "https://youtu.be/fUfR_C96uCc"},
           {"title": "Photolithography Process", "thumbnail": "https://img.youtube.com/vi/0pA9pI_A54M/0.jpg", "url": "https://youtu.be/0pA9pI_A54M"},
         ],
-        "pastQuestions": [{"title": "527 Past Question", "path": getPath("assets/1st Semester/ECE527/527 past question.pdf")}],
+        "pastQuestions": [
+          {"title": "527 Past Question", "path": getPath("assets/1st Semester/ECE527/527 past question.pdf")},
+          {"title": "PQ 16-17", "path": getPath("assets/1st Semester/ECE527/ECE_527_16-17.jpg")},
+          {"title": "PQ 17-18", "path": getPath("assets/1st Semester/ECE527/ECE_527_17-18.jpg")},
+        ],
         "assignments": <Assignment>[],
       },
       {
@@ -127,7 +146,11 @@ class CourseData {
         "pdfs": [
           {"title": "Introduction to DSP", "path": getPath("assets/pdfs/ECE 537 - Lect - Introduction-1.pdf"), "topic": "Introduction"},
           {"title": "Discrete-Time Systems", "path": getPath("assets/1st Semester/ECE537/Handout - Discrete-Time Systems.pdf"), "topic": "Systems"},
+          {"title": "DT Convolution", "path": getPath("assets/1st Semester/ECE537/DT Convolution.pdf"), "topic": "Systems"},
           {"title": "Z-Transform", "path": getPath("assets/1st Semester/ECE537/14_ZTransform(revised 10-15).pdf"), "topic": "Z-Transform"},
+          {"title": "DSP (Dr. Obinna Part)", "path": getPath("assets/1st Semester/ECE537/ECE 537 (DR OBINNA_S PART).pdf"), "topic": "General"},
+          {"title": "DSP (Li Tan)", "path": getPath("assets/1st Semester/ECE537/Digital_Signal_Processing__LI_TAN.pdf"), "topic": "Textbook"},
+          {"title": "DSP Schaum Outline", "path": getPath("assets/1st Semester/ECE537/DSP Schaum Outline Series.pdf"), "topic": "Textbook"},
         ],
         "videos": [
           {"title": "Intro to DSP: Sampling & Reconstruction", "thumbnail": "https://img.youtube.com/vi/6dF6K9R3B0U/0.jpg", "url": "https://youtu.be/6dF6K9R3B0U"},
@@ -198,6 +221,10 @@ class CourseData {
         "pdfs": [
           {"title": "DBMS Introduction", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/DBMS_INTRO_Lec1.pdf"), "topic": "Introduction"},
           {"title": "ER Model", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/DBMS_ER_MODEL_Lec2 new.pdf"), "topic": "ER Modeling"},
+          {"title": "EER Model", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/DBMS_EER_MODEL_Lec3.pdf"), "topic": "ER Modeling"},
+          {"title": "Oracle Database Handout", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/Oracle_Database_handout.pdf"), "topic": "General"},
+          {"title": "Database System Concepts", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/epdf.pub_database-system-concepts.pdf"), "topic": "Textbook"},
+          {"title": "Modern Database Management", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/Modern Database Management - 10th Edition.pdf"), "topic": "Textbook"},
         ],
         "videos": [
           {"title": "DBMS Introduction Full Course", "thumbnail": "https://img.youtube.com/vi/3EJ6S8_D_S8/0.jpg", "url": "https://youtu.be/3EJ6S8_D_S8"},
@@ -207,7 +234,10 @@ class CourseData {
           {"title": "Relational Algebra", "thumbnail": "https://img.youtube.com/vi/H_8_G_o9t_w/0.jpg", "url": "https://youtu.be/H_8_G_o9t_w"},
           {"title": "Database Indexing (B-Trees)", "thumbnail": "https://img.youtube.com/vi/aZjYr87r1b8/0.jpg", "url": "https://youtu.be/aZjYr87r1b8"},
         ],
-        "pastQuestions": [],
+        "pastQuestions": [
+          {"title": "PQ 17-18 A", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/ECE_542_17-18_A.jpg")},
+          {"title": "PQ 17-18 B", "path": getPath("assets/2nd Semester/ECE 542 DATABASE MANAGEMENT/ECE_542_17-18_B.jpg")},
+        ],
         "assignments": <Assignment>[],
       },
       {
@@ -243,6 +273,7 @@ class CourseData {
         "semester": 2,
         "pdfs": [
           {"title": "Control Systems", "path": getPath("assets/2nd Semester/ELE 574 CONTROL SYSTEM ENGINEERING/CONTROL SYSTEMS.pdf"), "topic": "General"},
+          {"title": "ELE 574 CONTROL SYSTEM.pdf", "path": getPath("assets/2nd Semester/ELE 574 CONTROL SYSTEM ENGINEERING/ELE 574 CONTROL SYSTEM.pdf"), "topic": "General"},
         ],
         "videos": [
           {"title": "Introduction to Control Systems", "thumbnail": "https://img.youtube.com/vi/STQpA_L7Y-M/0.jpg", "url": "https://youtu.be/STQpA_L7Y-M"},
