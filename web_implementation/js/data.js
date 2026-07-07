@@ -6,7 +6,7 @@ function getPath(path) {
     return `${SUPABASE_BUCKET_URL}/${remotePath.split('/').map(seg => encodeURIComponent(seg)).join('/')}`;
 }
 
-const COURSE_DATA = [
+let COURSE_DATA = [
     {
         "title": "ECE 505",
         "subtitle": "COMPUTER AIDED DESIGN",

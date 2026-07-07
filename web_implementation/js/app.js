@@ -14,6 +14,7 @@ let isLockInEnabled = false;
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     initTheme();
+    fetchRemoteMaterials(); // Fetch remote materials on start
     renderCourseGrid();
     updateGreeting();
     loadRecentActivity();
@@ -25,6 +26,55 @@ document.addEventListener('DOMContentLoaded', () => {
         syncService.syncAllMaterials();
     }
 });
+
+async function fetchRemoteMaterials() {
+    try {
+        const { data: remotePdfs, error: pdfError } = await supabaseClient
+            .from('course_materials')
+            .select('*');
+
+        const { data: remoteVideos, error: videoError } = await supabaseClient
+            .from('videos')
+            .select('*');
+
+        if (pdfError) throw pdfError;
+        if (videoError) throw videoError;
+
+        // Merge remote data into COURSE_DATA
+        COURSE_DATA.forEach(course => {
+            // Add remote PDFs
+            const coursePdfs = remotePdfs.filter(p => p.course === course.title && p.type === 'Course Material');
+            coursePdfs.forEach(rp => {
+                if (!course.pdfs.some(p => p.path === rp.url)) {
+                    course.pdfs.push({ title: rp.title, path: rp.url });
+                }
+            });
+
+            // Add remote Past Questions
+            const coursePqs = remotePdfs.filter(p => p.course === course.title && p.type === 'Past Question');
+            coursePqs.forEach(rp => {
+                if (!course.pastQuestions.some(p => p.path === rp.url)) {
+                    course.pastQuestions.push({ title: rp.title, path: rp.url });
+                }
+            });
+
+            // Add remote Videos
+            const courseVideos = remoteVideos.filter(v => v.course === course.title);
+            courseVideos.forEach(rv => {
+                if (!course.videos.some(v => v.url === rv.url)) {
+                    course.videos.push({ title: rv.title, thumbnail: rv.thumbnail, url: rv.url });
+                }
+            });
+        });
+
+        // Re-render grids if they are currently visible
+        if (currentPage === 'home') renderCourseGrid();
+        if (currentPage === 'courses') renderAllCourses();
+
+    } catch (e) {
+        console.error("Error fetching remote materials:", e);
+    }
+}
 
 function checkAuth() {
     const user = JSON.parse(localStorage.getItem('readr_user'));
@@ -559,7 +609,8 @@ function updateNavUI(pageId) {
 // UI Rendering
 function renderCourseGrid() {
     const grid = document.getElementById('course-grid');
-    const sem1 = COURSE_DATA.filter(c => c.semester === 1);
+    // Only show first 4 courses on landing page
+    const sem1 = COURSE_DATA.filter(c => c.semester === 1).slice(0, 4);
     grid.innerHTML = sem1.map(course => renderCourseCard(course)).join('');
 }
 
