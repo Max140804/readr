@@ -665,24 +665,31 @@ async function openPdf(path, title, courseName) {
 
     try {
         const offlineFile = await getFileOffline(path);
+        let url = path;
+
         if (offlineFile) {
-            const url = URL.createObjectURL(offlineFile.blob);
-            iframe.src = url;
+            url = URL.createObjectURL(offlineFile.blob);
         } else {
-            iframe.src = path;
-            // Cache it for future offline use
+            // Force a fetch to cache it for future offline use
             fetch(path)
                 .then(res => res.blob())
-                .then(blob => {
-                    saveFileOffline(path, title, blob);
-                    // Refresh view to show checkmark if still on materials page
-                    if (document.getElementById('materials-page').classList.contains('active')) {
-                        viewMaterials(courseName);
-                    }
-                })
-                .catch(err => console.error("Auto-cache failed:", err));
+                .then(blob => saveFileOffline(path, title, blob))
+                .catch(err => console.warn("Background cache failed:", err));
         }
+
+        // Mobile browsers (especially iOS) hate PDFs in iframes.
+        // We use a Google Docs viewer fallback for better compatibility if not offline
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile && !offlineFile) {
+            // Use Google PDF viewer for mobile web to ensure it opens
+            iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+        } else {
+            iframe.src = url;
+        }
+
     } catch (e) {
+        console.error("PDF Load Error:", e);
         iframe.src = path;
     }
 

@@ -42,11 +42,18 @@ class _SmartPDFViewerPageState extends State<SmartPDFViewerPage> with SingleTick
   final PdfViewerController _pdfViewerController = PdfViewerController();
   late AnimationController _bookmarkController;
 
-  bool get _isPdf => widget.assetPath.toLowerCase().endsWith('.pdf');
-  bool get _isImage => widget.assetPath.toLowerCase().endsWith('.jpg') || 
-                       widget.assetPath.toLowerCase().endsWith('.jpeg') || 
-                       widget.assetPath.toLowerCase().endsWith('.png') || 
-                       widget.assetPath.toLowerCase().endsWith('.webp');
+  bool get _isPdf {
+    final path = widget.assetPath.toLowerCase().split('?').first;
+    return path.endsWith('.pdf');
+  }
+
+  bool get _isImage {
+    final path = widget.assetPath.toLowerCase().split('?').first;
+    return path.endsWith('.jpg') || 
+           path.endsWith('.jpeg') || 
+           path.endsWith('.png') || 
+           path.endsWith('.webp');
+  }
 
   @override
   void initState() {
@@ -239,7 +246,7 @@ class _SmartPDFViewerPageState extends State<SmartPDFViewerPage> with SingleTick
           _downloadProgress = 0.0;
           if (_localCachedPath == null) {
             _hasError = true;
-            _errorMessage = "Offline: This file hasn't been downloaded yet.";
+            _errorMessage = "Failed to load document. Please check your connection or try again.";
           }
         });
         ScaffoldMessenger.of(context).showSnackBar(

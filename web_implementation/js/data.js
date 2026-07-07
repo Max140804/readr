@@ -2,7 +2,8 @@ const SUPABASE_BUCKET_URL = "https://hcqaseovlciadogewnsw.supabase.co/storage/v1
 
 function getPath(path) {
     const remotePath = path.replace('assets/', '');
-    return `${SUPABASE_BUCKET_URL}/${encodeURIComponent(remotePath)}`;
+    // Encode each segment separately to preserve slashes
+    return `${SUPABASE_BUCKET_URL}/${remotePath.split('/').map(seg => encodeURIComponent(seg)).join('/')}`;
 }
 
 const COURSE_DATA = [
